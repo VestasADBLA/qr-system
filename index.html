@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gauge Setup QR System</title>
-    <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; background: #f9f9f9; color: #333; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
@@ -18,7 +17,8 @@
         button.secondary { background: #6c757d; }
         .hidden { display: none; }
         .qr-item { display: inline-block; background: white; padding: 15px; margin: 10px; border: 1px solid #ddd; border-radius: 6px; text-align: center; vertical-align: top; }
-        .qr-item p { margin: 5px 0 0 0; font-size: 13px; font-weight: bold; max-width: 180px; word-wrap: break-word; }
+        .qr-item img { display: block; margin: 0 auto 10px auto; width: 200px; height: 200px; }
+        .qr-item p { margin: 5px 0 0 0; font-size: 13px; font-weight: bold; max-width: 200px; word-wrap: break-word; }
         #history-section { margin-top: 30px; }
     </style>
 </head>
@@ -41,7 +41,6 @@
             <table id="input-table">
                 <thead><tr><th>Parameter / Channel</th><th>Value / Gauge Factor</th></tr></thead>
                 <tbody>
-                    <!-- Metadata Fields -->
                     <tr><td><input type="text" class="meta-input" value="Specimen ID" readonly></td><td><input type="text" id="specimen-id" placeholder="e.g. SPEC-402"></td></tr>
                     <tr><td><input type="text" class="meta-input" value="GTRS Number" readonly></td><td><input type="text" placeholder="e.g. GTRS-9982"></td></tr>
                     <tr><td><input type="text" class="meta-input" value="Installer Name" readonly></td><td><input type="text" placeholder="e.g. John Doe"></td></tr>
@@ -81,7 +80,6 @@
         const encodedData = urlParams.get('d');
 
         if (encodedData) {
-            // USER VIEW: Decode data and display
             document.getElementById('user-view').classList.remove('hidden');
             try {
                 const data = JSON.parse(atob(decodeURIComponent(encodedData)));
@@ -93,14 +91,13 @@
                 alert("Error reading QR code data.");
             }
         } else {
-            // INSTALLER VIEW
             document.getElementById('installer-view').classList.remove('hidden');
         }
 
         function resetForm() {
-            const inputs = document.querySelectorAll('#input-table tbody tr');
-            inputs.forEach(row => {
-                row.querySelectorAll('input')[1].value = ''; // clear only the value input columns
+            const inputs = document.querySelectorAll('#input-table tbody tr input');
+            inputs.forEach((input, index) => {
+                if (index % 2 !== 0) input.value = '';
             });
         }
 
@@ -114,7 +111,6 @@
                 const label = inputs[0].value;
                 const value = inputs[1].value.trim();
                 
-                // Only include the metadata fields or channels that actually have values filled in
                 if (value !== '') {
                     data.push([label, value]);
                 }
@@ -125,8 +121,8 @@
             }
 
             const base64Data = encodeURIComponent(btoa(JSON.stringify(data)));
-            const currentUrl = window.location.href.split('?');
-            const finalUrl = `${currentUrl[0]}?d=${base64Data}`;
+            const currentUrl = window.location.href.split('?')[0];
+            const finalUrl = `${currentUrl}?d=${base64Data}`;
 
             document.getElementById('history-section').classList.remove('hidden');
 
@@ -134,19 +130,17 @@
             const itemContainer = document.createElement('div');
             itemContainer.className = 'qr-item';
             
-            const qrDiv = document.createElement('div');
+            // Fix: Use an open QR API image generation engine to render instantly
+            const qrImg = document.createElement('img');
+            qrImg.src = `https://qrserver.com{encodeURIComponent(finalUrl)}`;
+            qrImg.alt = "QR Code";
+
             const labelText = document.createElement('p');
             labelText.innerText = specimenId;
 
-            itemContainer.appendChild(qrDiv);
+            itemContainer.appendChild(qrImg);
             itemContainer.appendChild(labelText);
             gallery.insertBefore(itemContainer, gallery.firstChild);
-
-            new QRCode(qrDiv, {
-                text: finalUrl,
-                width: 200,
-                height: 200
-            });
         }
     </script>
 </body>
