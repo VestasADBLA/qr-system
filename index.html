@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gauge Setup QR System</title>
+    <title>Independent Gauge Setup System</title>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; background: #f9f9f9; color: #333; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
@@ -17,14 +17,14 @@
         button.secondary { background: #6c757d; }
         .hidden { display: none; }
         .qr-item { display: inline-block; background: white; padding: 15px; margin: 10px; border: 1px solid #ddd; border-radius: 6px; text-align: center; vertical-align: top; }
-        .qr-item img { display: block; margin: 0 auto 10px auto; width: 200px; height: 200px; }
-        .qr-item p { margin: 5px 0 0 0; font-size: 13px; font-weight: bold; max-width: 200px; word-wrap: break-word; }
+        .qr-item p { margin: 10px 0 0 0; font-size: 14px; font-weight: bold; color: #111; }
         #history-section { margin-top: 30px; }
+        canvas { display: block; margin: 0 auto; background: #fff; padding: 5px; border: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-    <!-- SECTION 1: END USER VIEW (What client sees when scanning) -->
+    <!-- SECTION 1: END USER VIEW -->
     <div id="user-view" class="card hidden">
         <h2>Specimen Calibration Data</h2>
         <table id="display-table">
@@ -37,15 +37,15 @@
     <div id="installer-view" class="hidden">
         <div class="card">
             <h2>Installer Input Form</h2>
-            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Fill in the metadata and Gauge Factors (GF). Blank rows will be skipped automatically.</p>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Fill in the metadata and Gauge Factors (GF). Blank channels will be excluded automatically.</p>
             <table id="input-table">
                 <thead><tr><th>Parameter / Channel</th><th>Value / Gauge Factor</th></tr></thead>
                 <tbody>
-                    <tr><td><input type="text" class="meta-input" value="Specimen ID" readonly></td><td><input type="text" id="specimen-id" placeholder="e.g. SPEC-402"></td></tr>
+                    <tr><td><input type="text" class="meta-input" value="Specimen ID" readonly></td><td><input type="text" id="specimen-id" placeholder="e.g. SPEC-001"></td></tr>
                     <tr><td><input type="text" class="meta-input" value="GTRS Number" readonly></td><td><input type="text" placeholder="e.g. GTRS-9982"></td></tr>
-                    <tr><td><input type="text" class="meta-input" value="Installer Name" readonly></td><td><input type="text" placeholder="e.g. John Doe"></td></tr>
+                    <tr><td><input type="text" class="meta-input" value="Installer Name" readonly></td><td><input type="text" id="installer-name" placeholder="e.g. John Doe"></td></tr>
                     
-                    <!-- Pre-loaded Channels 1 to 16 -->
+                    <!-- Channels 1 to 16 -->
                     <tr><td><input type="text" class="channel-label" value="Channel 1" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
                     <tr><td><input type="text" class="channel-label" value="Channel 2" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
                     <tr><td><input type="text" class="channel-label" value="Channel 3" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
@@ -70,86 +70,11 @@
 
         <div id="history-section" class="card hidden">
             <h3>Generated QR Codes (Active Batch)</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Scan or screenshot below. Newest items appear first.</p>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Scan directly off the screen or screenshot individual items.</p>
             <div id="qr-gallery"></div>
         </div>
     </div>
 
+    <!-- FULL EMBEDDED QR ENGINE LIBRARY (100% OFFLINE / SECURITY FIREWALL PROOF) -->
     <script>
-        // Read URL query string
-        const urlParams = new URLSearchParams(window.location.search);
-        const encodedData = urlParams.get('d');
-
-        if (encodedData) {
-            // USER VIEW: Decode data and display custom table
-            document.getElementById('user-view').classList.remove('hidden');
-            try {
-                const data = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
-                const tbody = document.getElementById('display-tbody');
-                data.forEach(row => {
-                    tbody.innerHTML += `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td></tr>`;
-                });
-            } catch (e) {
-                alert("Error unpacking data. The QR code URL string may have been truncated.");
-            }
-        } else {
-            // INSTALLER VIEW: Show input configuration panel
-            document.getElementById('installer-view').classList.remove('hidden');
-        }
-
-        function resetForm() {
-            const inputs = document.querySelectorAll('#input-table tbody tr');
-            inputs.forEach(row => {
-                const textFields = row.querySelectorAll('input');
-                if(textFields[1]) textFields[1].value = '';
-            });
-        }
-
-        function generateQR() {
-            const rows = document.querySelectorAll('#input-table tbody tr');
-            const data = [];
-            const specimenId = document.getElementById('specimen-id').value || "Unknown Specimen";
-
-            rows.forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                if (inputs[0] && inputs[1]) {
-                    const label = inputs[0].value;
-                    const value = inputs[1].value.trim();
-                    if (value !== '') {
-                        data.push([label, value]);
-                    }
-                }
-            });
-
-            if (data.length <= 3) {
-                return alert("Please enter at least one Gauge Factor before generating.");
-            }
-
-            // High compatibility string encoder (UTF-8 safe base64)
-            const stringified = JSON.js ? JSON.stringify(data) : JSON.stringify(data);
-            const base64Data = btoa(unescape(encodeURIComponent(stringified)));
-            const currentUrl = window.location.href.split('?')[0];
-            const finalUrl = `${currentUrl}?d=${encodeURIComponent(base64Data)}`;
-
-            // Make the active history layout visible
-            document.getElementById('history-section').classList.remove('hidden');
-
-            const gallery = document.getElementById('qr-gallery');
-            const itemContainer = document.createElement('div');
-            itemContainer.className = 'qr-item';
-            
-            // Generate standard image layout leveraging Google's stable charts engine
-            const qrImg = document.createElement('img');
-            qrImg.src = `https://googleapis.com{encodeURIComponent(finalUrl)}`;
-            qrImg.alt = "Generated Data QR Code";
-
-            const labelText = document.createElement('p');
-            labelText.innerText = specimenId;
-
-            itemContainer.appendChild(qrImg);
-            itemContainer.appendChild(labelText);
-            gallery.insertBefore(itemContainer, gallery.firstChild);
-        }
-    </script>
-</body>
-</html>
+        !function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):t.QRious=e()}(this,function(){"use strict";function t(t,e){var n;return t&&(n=String(t).toLowerCase(),e.hasOwnProperty(n)?e[n]:t)}function e(t,e){if(t)for(var n in t)Object.prototype.hasOwnProperty.call(t,n)&&e(t[n],n)}function n(t,n,r){e(r,function(e,r){var o=n[r];Object.defineProperty(t,r,{get:function(){return o.get(e)},set:function(t){o.set(e,t)},configurable:!0,enumerable:!0})})}function r(t,e,n,r){this.element=t,this.element.qrious=this,this.enabled=Boolean(e),this.options=n,this.struct=r,this.initializer=null,this.update()}function o(t,e,n,o,i){var u={};r.call(u,t,e,n,o),this.get=function(t){return i.get.call(u,t)},this.set=function(t,e){i.set.call(u,t,e)},this.configurable=!0,this.enumerable=!0}function i(t){return t}function u(t,r){var o={};return e(r,function(n,r){var u=t[r];o[r]={get:function(t){return u.get?u.get(t):t},set:function(t,e){u.set?u.set(t,e):t=e},configurable:!0,enumerable:!0}}),n(o,t,r),o}var f=function(t){return"string"==typeof t?{text:t}:t},c=function(t,n){var r={};return e(t,function(t,e){r[e]=t}),e(n,function(t,e){r[e]=t}),r},a=function(t){return null!=t},s=function(t){return"number"==typeof t},l=function(t){return s(t)&&!isNaN(t)&&isFinite(t)},h=function(t,e,n){return t<e?e:t>n?n:t},g=function(t){return s(t)&&t%1==0},p=function(t){return"string"==typeof t},d=function(t){return p(t)&&""!==t},w=function(t){return"boolean"==typeof t},v=function(t){return"function"==typeof t},y=function(t){return t instanceof RegExp},m=function(t){return"object"==typeof t&&null!==t},B=function(t){return m(t)&&"object"==typeof t.nodeType&&p(t.nodeName)},A=function(t){return Array.isArray(t)},E=function(t){return function(e){return a(e)&&e.constructor===t}},M=E(Object),R=E(String),b=E(Number),S=E(Boolean),C=E(Function),U=E(RegExp),L=E(Array),O=Math.abs,k=Math.max,T=Math.min,j=Math.pow,I=Math.floor,N=Math.ceil,V=Math.round,q=function(t){return null==t?[]:Object.keys(t)},_=[],F=function(t){var e=q(t);return e.length?t[e[0]]:null};r.prototype.update=function(){this.enabled&&(v(this.initializer)&&this.initializer(),e(this.options,this.updateOption.bind(this)))},r.prototype.updateOption=function(t,e){var n=this.struct[e];if(n&&n.value){var r=n.value(t);r!==this.element[e]&&(this.element[e]=r,v(n.modifies)&&n.modifies.forEach(this.updateOption.bind(this,t)))}},o.prototype=Object.create(r.prototype),o.prototype.constructor=o;var z=function(t,e,n){var r={};return q(e).forEach(function(o){var i=e[o],u=m(i)&&(i.get||i.set)?i:{get:function(){return this.options[o]},set:function(t){this.options[o]=t}};r[o]=new o(t,n,e,r,u)}),Object.defineProperties(t,r),t};var D=function(t,n){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:"";return e(n,function(e,n){var o=r?r+"-"+n:n;m(e)&&!B(e)&&!A(e)?D(t,e,o):t.setAttribute(o,e)}),t};var G=function(t){return D(document.createElement("canvas"),t)},P=function(t){return"string"==typeof t?document.getElementById(t):t},W=function(t){return"string"==typeof t?document.querySelector(t):t},X=function(t){return"string"==typeof t?document.querySelectorAll(t):t};var Y=[1,0,0,1,0,0],H=function(t,e){return t.classList?t.classList.contains(e):new RegExp("(^| )"+e+"( |$)","gif").test(t.className)},J=function(t,e){t.classList?t.classList.add(e):t.className+=" "+e},K=function(t,e){t.classList?t.classList.remove(e):t.className=t.className.replace(new RegExp("(^|\\b)"+e.split(" ").join("|")+"(\\b|$)"...
