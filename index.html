@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Concurrent QR Table System</title>
+    <title>Gauge Setup QR System</title>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; background: #f9f9f9; color: #333; }
@@ -11,22 +11,24 @@
         table { width: 100%; border-collapse: collapse; margin: 15px 0; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background-color: #f4f4f4; }
-        input { width: 90%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        input { width: 92%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .meta-input { background-color: #fffdf0; font-weight: bold; }
+        .channel-label { font-weight: bold; color: #444; background: #fcfcfc; }
+        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 15px; margin-right: 5px; }
         button.secondary { background: #6c757d; }
         .hidden { display: none; }
         .qr-item { display: inline-block; background: white; padding: 15px; margin: 10px; border: 1px solid #ddd; border-radius: 6px; text-align: center; vertical-align: top; }
-        .qr-item p { margin: 5px 0 0 0; font-size: 14px; font-weight: bold; }
+        .qr-item p { margin: 5px 0 0 0; font-size: 13px; font-weight: bold; max-width: 180px; word-wrap: break-word; }
         #history-section { margin-top: 30px; }
     </style>
 </head>
 <body>
 
-    <!-- SECTION 1: END USER VIEW (What the customer sees) -->
+    <!-- SECTION 1: END USER VIEW -->
     <div id="user-view" class="card hidden">
-        <h2>System Configuration Data</h2>
+        <h2>Specimen Calibration Data</h2>
         <table id="display-table">
-            <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+            <thead><tr><th>Parameter / Channel</th><th>Value / Gauge Factor</th></tr></thead>
             <tbody id="display-tbody"></tbody>
         </table>
     </div>
@@ -35,25 +37,41 @@
     <div id="installer-view" class="hidden">
         <div class="card">
             <h2>Installer Input Form</h2>
-            <p style="font-size: 14px; color: #666;">Fill this out and click 'Generate' to create a unique QR code. You can do this repeatedly.</p>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Fill in the metadata and Gauge Factors (GF). Blank channels will be excluded automatically.</p>
             <table id="input-table">
-                <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+                <thead><tr><th>Parameter / Channel</th><th>Value / Gauge Factor</th></tr></thead>
                 <tbody>
-                    <tr><td><input type="text" value="Installation Date"></td><td><input type="text" placeholder="e.g. 2026-07-20"></td></tr>
-                    <tr><td><input type="text" value="Model Number"></td><td><input type="text" placeholder="e.g. TX-500"></td></tr>
-                    <tr><td><input type="text" value="Serial Number"></td><td><input type="text" placeholder="e.g. 987654321"></td></tr>
-                    <tr><td><input type="text" value="Label / Asset ID"></td><td><input type="text" id="asset-id" placeholder="e.g. Pump Room 1 (For your records)"></td></tr>
+                    <!-- Metadata Fields -->
+                    <tr><td><input type="text" class="meta-input" value="Specimen ID" readonly></td><td><input type="text" id="specimen-id" placeholder="e.g. SPEC-402"></td></tr>
+                    <tr><td><input type="text" class="meta-input" value="GTRS Number" readonly></td><td><input type="text" placeholder="e.g. GTRS-9982"></td></tr>
+                    <tr><td><input type="text" class="meta-input" value="Installer Name" readonly></td><td><input type="text" placeholder="e.g. John Doe"></td></tr>
+                    
+                    <!-- Pre-loaded Channels 1 to 16 -->
+                    <tr><td><input type="text" class="channel-label" value="Channel 1" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 2" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 3" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 4" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 5" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 6" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 7" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 8" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 9" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 10" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 11" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 12" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 13" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 14" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 15" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
+                    <tr><td><input type="text" class="channel-label" value="Channel 16" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
                 </tbody>
             </table>
-            <button onclick="addRow()">+ Add Row</button>
             <button onclick="generateQR()">Generate QR Code</button>
-            <button onclick="resetForm()" class="secondary">Clear Form</button>
+            <button onclick="resetForm()" class="secondary">Clear Values</button>
         </div>
 
-        <!-- THE HISTORY LOG: Displays all active QR codes generated in this session -->
         <div id="history-section" class="card hidden">
             <h3>Generated QR Codes (Active Batch)</h3>
-            <p style="font-size: 13px; color: #666;">All codes below are active. You can screenshot them individually.</p>
+            <p style="font-size: 12px; color: #666;">Scan or screenshot below. Newest items appear first.</p>
             <div id="qr-gallery"></div>
         </div>
     </div>
@@ -63,79 +81,71 @@
         const encodedData = urlParams.get('d');
 
         if (encodedData) {
-            // USER FLOW
+            // USER VIEW: Decode data and display
             document.getElementById('user-view').classList.remove('hidden');
             try {
                 const data = JSON.parse(atob(decodeURIComponent(encodedData)));
                 const tbody = document.getElementById('display-tbody');
                 data.forEach(row => {
-                    if(row[0] || row[1]) {
-                        tbody.innerHTML += `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td></tr>`;
-                    }
+                    tbody.innerHTML += `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td></tr>`;
                 });
             } catch (e) {
                 alert("Error reading QR code data.");
             }
         } else {
-            // INSTALLER FLOW
+            // INSTALLER VIEW
             document.getElementById('installer-view').classList.remove('hidden');
         }
 
-        function addRow() {
-            const tbody = document.querySelector('#input-table tbody');
-            tbody.innerHTML += `<tr><td><input type="text"></td><td><input type="text"></td></tr>`;
-        }
-
         function resetForm() {
-            const inputs = document.querySelectorAll('#input-table tbody input');
-            inputs.forEach((input, index) => {
-                // Keep the default labels, clear the values
-                if (index % 2 !== 0 || index > 5) {
-                    input.value = '';
-                }
+            const inputs = document.querySelectorAll('#input-table tbody tr');
+            inputs.forEach(row => {
+                row.querySelectorAll('input')[1].value = ''; // clear only the value input columns
             });
         }
 
         function generateQR() {
             const rows = document.querySelectorAll('#input-table tbody tr');
             const data = [];
-            let label = document.getElementById('asset-id').value || "Unnamed Table";
+            const specimenId = document.getElementById('specimen-id').value || "Unknown Specimen";
 
             rows.forEach(row => {
                 const inputs = row.querySelectorAll('input');
-                if (inputs[0].value || inputs[1].value) {
-                    data.push([inputs[0].value, inputs[1].value]);
+                const label = inputs[0].value;
+                const value = inputs[1].value.trim();
+                
+                // Only include the metadata fields or channels that actually have values filled in
+                if (value !== '') {
+                    data.push([label, value]);
                 }
             });
 
-            if (data.length === 0) return alert("Please enter some data first.");
+            if (data.length <= 3) {
+                return alert("Please input at least one Gauge Factor before generating.");
+            }
 
-            // Build the unique URL for this specific data
             const base64Data = encodeURIComponent(btoa(JSON.stringify(data)));
-            const currentUrl = window.location.href.split('?')[0];
-            const finalUrl = `${currentUrl}?d=${base64Data}`;
+            const currentUrl = window.location.href.split('?');
+            const finalUrl = `${currentUrl[0]}?d=${base64Data}`;
 
-            // Show the history container
             document.getElementById('history-section').classList.remove('hidden');
 
-            // Create a new distinct container for this specific QR code
             const gallery = document.getElementById('qr-gallery');
             const itemContainer = document.createElement('div');
             itemContainer.className = 'qr-item';
             
             const qrDiv = document.createElement('div');
             const labelText = document.createElement('p');
-            labelText.innerText = label;
+            labelText.innerText = specimenId;
 
             itemContainer.appendChild(qrDiv);
             itemContainer.appendChild(labelText);
-            gallery.insertBefore(itemContainer, gallery.firstChild); // Put newest at the top
+            gallery.insertBefore(itemContainer, gallery.firstChild);
 
-            // Render the QR code into its container
             new QRCode(qrDiv, {
                 text: finalUrl,
-                width: 180,
-                height: 180
+                width: 200,
+                height: 200
             });
         }
     </script>
