@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Independent Gauge Setup System</title>
+    <title>Gauge Setup QR System</title>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; background: #f9f9f9; color: #333; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
@@ -17,15 +17,14 @@
         button.secondary { background: #6c757d; }
         .hidden { display: none; }
         .qr-item { display: inline-block; background: white; padding: 15px; margin: 10px; border: 1px solid #ddd; border-radius: 6px; text-align: center; vertical-align: top; }
-        .qr-item p { margin: 8px 0 0 0; font-size: 14px; font-weight: bold; color: #111; }
+        .qr-item img { display: block; margin: 0 auto 10px auto; width: 200px; height: 200px; }
+        .qr-item p { margin: 5px 0 0 0; font-size: 13px; font-weight: bold; max-width: 200px; word-wrap: break-word; }
         #history-section { margin-top: 30px; }
-        /* Local Canvas Styling */
-        canvas { display: block; margin: 0 auto; background: #fff; padding: 5px; border: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-    <!-- SECTION 1: END USER VIEW -->
+    <!-- SECTION 1: END USER VIEW (What client sees when scanning) -->
     <div id="user-view" class="card hidden">
         <h2>Specimen Calibration Data</h2>
         <table id="display-table">
@@ -38,15 +37,15 @@
     <div id="installer-view" class="hidden">
         <div class="card">
             <h2>Installer Input Form</h2>
-            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Fill in the metadata and Gauge Factors (GF). Blank channels will be excluded automatically.</p>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Fill in the metadata and Gauge Factors (GF). Blank rows will be skipped automatically.</p>
             <table id="input-table">
                 <thead><tr><th>Parameter / Channel</th><th>Value / Gauge Factor</th></tr></thead>
                 <tbody>
-                    <tr><td><input type="text" class="meta-input" value="Specimen ID" readonly></td><td><input type="text" id="specimen-id" placeholder="e.g. SPEC-001"></td></tr>
+                    <tr><td><input type="text" class="meta-input" value="Specimen ID" readonly></td><td><input type="text" id="specimen-id" placeholder="e.g. SPEC-402"></td></tr>
                     <tr><td><input type="text" class="meta-input" value="GTRS Number" readonly></td><td><input type="text" placeholder="e.g. GTRS-9982"></td></tr>
                     <tr><td><input type="text" class="meta-input" value="Installer Name" readonly></td><td><input type="text" placeholder="e.g. John Doe"></td></tr>
                     
-                    <!-- Channels 1 to 16 -->
+                    <!-- Pre-loaded Channels 1 to 16 -->
                     <tr><td><input type="text" class="channel-label" value="Channel 1" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
                     <tr><td><input type="text" class="channel-label" value="Channel 2" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
                     <tr><td><input type="text" class="channel-label" value="Channel 3" readonly></td><td><input type="text" placeholder="e.g. GF2.01"></td></tr>
@@ -71,24 +70,86 @@
 
         <div id="history-section" class="card hidden">
             <h3>Generated QR Codes (Active Batch)</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Scan directly off the screen or screenshot individual items.</p>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Scan or screenshot below. Newest items appear first.</p>
             <div id="qr-gallery"></div>
         </div>
     </div>
 
-    <!-- NATIVE SELF-CONTAINED QR COMPILER ENGINE -->
     <script>
-        const qrcodegen={_galoisMultiply(a,b){let p=0;for(let i=0;i<8;i++){if((b&1)!==0)p^=a;const hi=a&0x80;a<<=1;if(hi!==0)a^=0x1D;b>>>=1}return p},_getErrorCorrectionBlocks(version,ecc){const ecPerBlock=[[7,10,15,17],[10,16,22,28],[15,26,36,44],[20,34,52,64],[26,48,72,88],[36,64,96,112],[40,72,108,130],[48,88,132,156],[60,110,160,192],[72,130,192,224]];return ecPerBlock[version-1][ecc]},_encodeKanji(str){throw new Error("Unsupported format")},_getBit(x,i){return(x>>>i)&1},encodeText(text,ecc){const bytes=new TextEncoder().encode(text);let version=1;while(true){const capacity=this._getCapacity(version,ecc);if(bytes.length<=capacity)break;version++;if(version>10)throw new Error("Data limit exceeded. Reduce input characters.")}const bits=[];bits.push(4>>>3,4>>>2&1,4>>>1&1,4&1);const len=bytes.length;for(let i=7;i>=0;i--)bits.push((len>>>i)&1);for(const b of bytes){for(let i=7;i>=0;i--)bits.push((b>>>i)&1)}while(bits.length%8!==0)bits.push(0);while(bits.length<this._getCapacity(version,ecc)*8){bits.push(1,1,-1,-1,1,1,0,0)}return this._createMatrix(version,ecc,bits)},_getCapacity(v,ecc){const caps=[[19,16,13,9],[34,28,22,16],[55,44,34,26],[80,64,48,36],[108,86,62,46],[136,108,76,60],[156,124,88,66],[194,154,110,86],[232,182,132,100],[274,216,154,122]];return caps[v-1][ecc]},_createMatrix(version,ecc,bits){const size=version*4+17;const matrix=Array(size).fill(null).map(()=>Array(size).fill(0));const isReserved=Array(size).fill(null).map(()=>Array(size).fill(false));this._drawFinders(matrix,isReserved,size);this._drawAlignments(version,matrix,isReserved);this._drawTiming(matrix,isReserved,size);this._drawFormatBits(matrix,isReserved,size,ecc);this._fillData(matrix,isReserved,size,bits);return matrix},_drawFinders(m,r,s){this._drawFinder(m,r,0,0);this._drawFinder(m,r,s-7,0);this._drawFinder(m,r,0,s-7)},_drawFinder(m,r,x,y){for(let i=0;i<7;i++){for(let j=0;j<7;j++){m[y+i][x+j]=(i===0||i===6||j===0||j===6||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;r[y+i][x+j]=true}}},_drawAlignments(v,m,r){if(v<2)return;const pos=[[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]];const coords=pos[v-2];for(const y of coords){for(const x of coords){if(r[y][x])continue;for(let i=-2;i<=2;i++){for(let j=-2;j<=2;j++){m[y+i][x+j]=(i===-2||i===2||j===-2||j===2||(i===0&&j===0))?1:0;r[y+i][x+j]=true}}}}},_drawTiming(m,r,s){for(let i=8;i<s-8;i++){m[6][i]=i%2===0?1:0;r[6][i]=true;m[i][6]=i%2===0?1:0;r[i][6]=true}},_drawFormatBits(m,r,s,ecc){const masks=[0x5412,0x5125,0x5E7C,0x5B4B];const bits=masks[ecc];for(let i=0;i<6;i++){m[i][8]=(bits>>>i)&1;r[i][8]=true;m[8][s-1-i]=(bits>>>i)&1;r[8][s-1-i]=true}m[7][8]=(bits>>>6)&1;r[7][8]=true;m[8][8]=(bits>>>7)&1;r[8][8]=true;m[8][7]=(bits>>>8)&1;r[8][7]=true;for(let i=0;i<6;i++){m[8][5-i]=(bits>>>(9+i))&1;r[8][5-i]=true;m[s-6+i][8]=(bits>>>(9+i))&1;r[s-6+i][8]=true}m[8][s-7]=1;r[8][s-7]=true},_fillData(m,r,s,bits){let bitIdx=0;let direction=-1;let row=s-1;for(let col=s-1;col>0;col-=2){if(col===6)col--;while(row>=0&&row<s){for(let i=0;i<2;i++){const c=col-i;if(!r[row][c]){let b=0;if(bitIdx<bits.length){b=bits[bitIdx++]}m[row][c]=b}}row+=direction}direction=-direction;row+=direction}}};
-
+        // Read URL query string
         const urlParams = new URLSearchParams(window.location.search);
         const encodedData = urlParams.get('d');
 
         if (encodedData) {
+            // USER VIEW: Decode data and display custom table
             document.getElementById('user-view').classList.remove('hidden');
             try {
-                const data = JSON.parse(atob(decodeURIComponent(encodedData)));
+                const data = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
                 const tbody = document.getElementById('display-tbody');
                 data.forEach(row => {
                     tbody.innerHTML += `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td></tr>`;
                 });
             } catch (e) {
+                alert("Error unpacking data. The QR code URL string may have been truncated.");
+            }
+        } else {
+            // INSTALLER VIEW: Show input configuration panel
+            document.getElementById('installer-view').classList.remove('hidden');
+        }
+
+        function resetForm() {
+            const inputs = document.querySelectorAll('#input-table tbody tr');
+            inputs.forEach(row => {
+                const textFields = row.querySelectorAll('input');
+                if(textFields[1]) textFields[1].value = '';
+            });
+        }
+
+        function generateQR() {
+            const rows = document.querySelectorAll('#input-table tbody tr');
+            const data = [];
+            const specimenId = document.getElementById('specimen-id').value || "Unknown Specimen";
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0] && inputs[1]) {
+                    const label = inputs[0].value;
+                    const value = inputs[1].value.trim();
+                    if (value !== '') {
+                        data.push([label, value]);
+                    }
+                }
+            });
+
+            if (data.length <= 3) {
+                return alert("Please enter at least one Gauge Factor before generating.");
+            }
+
+            // High compatibility string encoder (UTF-8 safe base64)
+            const stringified = JSON.js ? JSON.stringify(data) : JSON.stringify(data);
+            const base64Data = btoa(unescape(encodeURIComponent(stringified)));
+            const currentUrl = window.location.href.split('?')[0];
+            const finalUrl = `${currentUrl}?d=${encodeURIComponent(base64Data)}`;
+
+            // Make the active history layout visible
+            document.getElementById('history-section').classList.remove('hidden');
+
+            const gallery = document.getElementById('qr-gallery');
+            const itemContainer = document.createElement('div');
+            itemContainer.className = 'qr-item';
+            
+            // Generate standard image layout leveraging Google's stable charts engine
+            const qrImg = document.createElement('img');
+            qrImg.src = `https://googleapis.com{encodeURIComponent(finalUrl)}`;
+            qrImg.alt = "Generated Data QR Code";
+
+            const labelText = document.createElement('p');
+            labelText.innerText = specimenId;
+
+            itemContainer.appendChild(qrImg);
+            itemContainer.appendChild(labelText);
+            gallery.insertBefore(itemContainer, gallery.firstChild);
+        }
+    </script>
+</body>
+</html>
