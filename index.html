@@ -1,999 +1,2844 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light">
 <title>QR-to-Table Configuration</title>
+
 <style>
 :root{
-  --bg:#f3f5f7;--card:#fff;--text:#17202a;--muted:#65717e;
-  --line:#dce2e8;--primary:#1268d4;--primary2:#0d54ad;
-  --danger:#b42318;--success:#067647;--radius:12px;
+  --bg:#f4f6f8;
+  --card:#fff;
+  --text:#182230;
+  --muted:#667085;
+  --line:#d0d5dd;
+  --blue:#175cd3;
+  --blue2:#1849a9;
+  --red:#b42318;
+  --green:#067647;
 }
+
 *{box-sizing:border-box}
+
 body{
-  margin:0;background:var(--bg);color:var(--text);
-  font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  line-height:1.45;
 }
-.container{width:min(1100px,calc(100% - 28px));margin:28px auto 60px}
-header{margin-bottom:20px}
+
+.container{
+  width:min(1100px,calc(100% - 28px));
+  margin:30px auto 60px;
+}
+
 h1,h2,h3{margin-top:0}
-h1{margin-bottom:5px;font-size:clamp(24px,4vw,34px)}
-h2{font-size:21px}
-h3{font-size:17px}
-.subtitle{margin:0;color:var(--muted)}
+
+h1{
+  margin-bottom:5px;
+  font-size:clamp(25px,4vw,36px);
+}
+
+.subtitle{
+  margin:0 0 22px;
+  color:var(--muted);
+}
+
 .card{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:0 2px 8px rgba(16,24,40,.05);padding:22px;margin-bottom:20px
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:22px;
+  margin-bottom:22px;
+  box-shadow:0 2px 8px rgba(16,24,40,.05);
 }
-.form-grid{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:0}
-.form-row{display:contents}
-.form-row label,.form-row .field{
-  padding:10px 12px;border-bottom:1px solid var(--line)
+
+.form-grid{
+  display:grid;
+  grid-template-columns:220px 1fr;
 }
+
+.form-row{
+  display:contents;
+}
+
+.form-row label,
+.form-row .field{
+  padding:10px 12px;
+  border-bottom:1px solid #eaecf0;
+}
+
 .form-row label{
-  font-weight:650;background:#f8fafb;display:flex;align-items:center
+  display:flex;
+  align-items:center;
+  font-weight:700;
+  background:#f9fafb;
 }
-.form-row:first-child label{border-radius:8px 0 0 0}
-.form-row:first-child .field{border-radius:0 8px 0 0}
+
 input{
-  width:100%;min-height:42px;padding:9px 11px;border:1px solid #bbc5cf;
-  border-radius:7px;background:#fff;color:var(--text);font:inherit
+  width:100%;
+  min-height:42px;
+  padding:9px 11px;
+  border:1px solid #98a2b3;
+  border-radius:7px;
+  font:inherit;
 }
-input:focus{outline:3px solid rgba(18,104,212,.16);border-color:var(--primary)}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-button,.button{
-  appearance:none;border:0;border-radius:8px;min-height:43px;padding:10px 17px;
-  font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;
-  align-items:center;justify-content:center
+
+input:focus{
+  outline:3px solid rgba(23,92,211,.15);
+  border-color:var(--blue);
 }
-.primary{background:var(--primary);color:#fff}
-.primary:hover{background:var(--primary2)}
-.secondary{background:#e9eef4;color:#253342}
-button:disabled{opacity:.55;cursor:not-allowed}
-.status{min-height:22px;margin:12px 0 0;font-weight:600}
-.status.error{color:var(--danger)}
-.status.success{color:var(--success)}
-.history-empty{color:var(--muted);margin:0}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+
+button,
+.btn{
+  border:0;
+  border-radius:8px;
+  min-height:43px;
+  padding:10px 17px;
+  cursor:pointer;
+  font:inherit;
+  font-weight:700;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.primary{
+  background:var(--blue);
+  color:#fff;
+}
+
+.primary:hover{
+  background:var(--blue2);
+}
+
+.secondary{
+  background:#eaecf0;
+  color:#344054;
+}
+
+.status{
+  min-height:22px;
+  margin:12px 0 0;
+  font-weight:700;
+}
+
+.success{color:var(--green)}
+.error{color:var(--red)}
+
+.history-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
 .history-item{
-  border:1px solid var(--line);border-radius:10px;padding:18px;margin-top:16px
+  margin-top:20px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:18px;
 }
-.history-head{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:12px;flex-wrap:wrap;margin-bottom:14px
+
+.history-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
 }
-.history-head h3{margin:0;word-break:break-word}
-.qr-layout{
-  display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:start
+
+.history-title h3{
+  margin:0;
 }
-.qr-wrap{
-  background:#fff;padding:10px;border:1px solid var(--line);
-  border-radius:8px;line-height:0
-}
-canvas{display:block;max-width:100%;height:auto}
-.url-box{
-  font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
-  padding:10px;background:#f5f7f9;border:1px solid var(--line);
-  border-radius:7px;overflow-wrap:anywhere;margin-bottom:10px
-}
-.meta{color:var(--muted);font-size:13px}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th,td{
-  padding:11px 13px;border:1px solid var(--line);text-align:left;vertical-align:top
-}
-th{background:#f4f6f8;font-weight:700}
-.config-section{margin-top:20px}
-.readonly-table th:first-child{width:38%}
+
 .badge{
-  display:inline-block;padding:3px 8px;background:#e9f2ff;color:#154c91;
-  border-radius:999px;font-size:12px;font-weight:700
+  background:#eff8ff;
+  color:#175cd3;
+  padding:4px 9px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
 }
-.hidden{display:none!important}
+
+.qr-layout{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:22px;
+  align-items:start;
+}
+
+.qr-box{
+  background:white;
+  border:1px solid #d0d5dd;
+  padding:12px;
+  border-radius:8px;
+  line-height:0;
+}
+
+canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+  image-rendering:pixelated;
+}
+
+.url-box{
+  padding:11px;
+  border:1px solid var(--line);
+  background:#f9fafb;
+  border-radius:7px;
+  font-family:monospace;
+  font-size:12px;
+  overflow-wrap:anywhere;
+}
+
+.muted{
+  color:var(--muted);
+  font-size:13px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  border:1px solid var(--line);
+  padding:11px 13px;
+  text-align:left;
+}
+
+th{
+  background:#f9fafb;
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+.channel-section{
+  margin-top:24px;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.empty{
+  color:var(--muted);
+}
+
 .error-panel{
-  border-left:4px solid var(--danger);padding:14px;background:#fff3f2;
-  border-radius:6px;color:#7a271a
+  background:#fef3f2;
+  color:#912018;
+  border-left:4px solid var(--red);
+  border-radius:6px;
+  padding:15px;
 }
-.footer-note{color:var(--muted);font-size:12px;margin-top:16px}
+
 @media(max-width:700px){
-  .container{width:min(100% - 18px,1100px);margin-top:14px}
-  .card{padding:14px}
-  .form-grid{grid-template-columns:1fr}
-  .form-row{display:block;border-bottom:1px solid var(--line);padding:10px 0}
-  .form-row label,.form-row .field{display:block;border:0;padding:3px 0;background:none}
-  .form-row label{margin-bottom:5px}
-  .qr-layout{grid-template-columns:1fr}
-  .qr-wrap{width:max-content;max-width:100%;margin:auto}
-}
-@media print{
-  body{background:#fff}
-  .no-print{display:none!important}
-  .card{box-shadow:none}
+
+  .container{
+    width:calc(100% - 18px);
+    margin-top:14px;
+  }
+
+  .card{
+    padding:15px;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .form-row{
+    display:block;
+    padding:9px 0;
+    border-bottom:1px solid #eaecf0;
+  }
+
+  .form-row label,
+  .form-row .field{
+    display:block;
+    padding:3px 0;
+    border:0;
+    background:none;
+  }
+
+  .form-row label{
+    margin-bottom:5px;
+  }
+
+  .qr-layout{
+    grid-template-columns:1fr;
+  }
+
+  .qr-box{
+    width:max-content;
+    max-width:100%;
+    margin:auto;
+  }
 }
 </style>
 </head>
+
 <body>
+
 <div class="container">
 
-  <!-- INSTALLER VIEW -->
-  <main id="installerView" class="hidden">
-    <header>
-      <h1>QR-to-Table Configuration</h1>
-      <p class="subtitle">Installer View</p>
-    </header>
+<!-- =====================================================
+     INSTALLER VIEW
+===================================================== -->
 
-    <section class="card">
-      <h2>Configuration Input</h2>
+<main id="installerView" class="hidden">
 
-      <form id="configForm" autocomplete="off">
-        <div class="form-grid" id="formGrid">
-          <div class="form-row">
-            <label for="specimenId">Specimen ID</label>
-            <div class="field">
-              <input id="specimenId" type="text" maxlength="100" required>
-            </div>
-          </div>
+<header>
+  <h1>QR-to-Table Configuration</h1>
+  <p class="subtitle">Installer View</p>
+</header>
 
-          <div class="form-row">
-            <label for="gtrsNumber">GTRS Number</label>
-            <div class="field">
-              <input id="gtrsNumber" type="text" maxlength="100">
-            </div>
-          </div>
+<section class="card">
 
-          <div class="form-row">
-            <label for="installerName">Installer Name</label>
-            <div class="field">
-              <input id="installerName" type="text" maxlength="100">
-            </div>
-          </div>
-        </div>
+<h2>Configuration Input</h2>
 
-        <div class="actions">
-          <button class="primary" type="submit">Generate QR Code</button>
-        </div>
+<form id="configForm" autocomplete="off">
 
-        <p id="formStatus" class="status" aria-live="polite"></p>
-      </form>
-    </section>
+<div class="form-grid" id="formGrid">
 
-    <section class="card">
-      <div class="history-head">
-        <div>
-          <h2 style="margin-bottom:4px">Batch History Log</h2>
-          <div class="meta">Generated QR codes remain available for this browser session.</div>
-        </div>
-        <button id="clearHistory" class="secondary hidden" type="button">Clear Session Log</button>
-      </div>
+<div class="form-row">
+<label for="specimenId">Specimen ID</label>
+<div class="field">
+<input id="specimenId" required maxlength="100">
+</div>
+</div>
 
-      <p id="historyEmpty" class="history-empty">No QR codes have been generated in this session.</p>
-      <div id="history"></div>
-    </section>
-  </main>
+<div class="form-row">
+<label for="gtrsNumber">GTRS Number</label>
+<div class="field">
+<input id="gtrsNumber" maxlength="100">
+</div>
+</div>
 
-  <!-- END USER VIEW -->
-  <main id="userView" class="hidden">
-    <header>
-      <h1>Specimen Configuration</h1>
-      <p class="subtitle">End User View</p>
-    </header>
-
-    <section id="userCard" class="card"></section>
-  </main>
+<div class="form-row">
+<label for="installerName">Installer Name</label>
+<div class="field">
+<input id="installerName" maxlength="100">
+</div>
+</div>
 
 </div>
 
+<div class="actions">
+<button class="primary" type="submit">Generate QR Code</button>
+</div>
+
+<p id="status" class="status"></p>
+
+</form>
+</section>
+
+
+<section class="card">
+
+<div class="history-header">
+
+<div>
+<h2 style="margin-bottom:4px">Batch History Log</h2>
+<div class="muted">
+Generated QR codes remain available while this page is open.
+</div>
+</div>
+
+<button id="clearHistory"
+        class="secondary hidden"
+        type="button">
+Clear Session Log
+</button>
+
+</div>
+
+<p id="historyEmpty" class="empty">
+No QR codes generated in this session.
+</p>
+
+<div id="history"></div>
+
+</section>
+
+</main>
+
+
+
+<!-- =====================================================
+     END USER VIEW
+===================================================== -->
+
+<main id="userView" class="hidden">
+
+<header>
+<h1>Specimen Configuration</h1>
+<p class="subtitle">Read-Only Configuration</p>
+</header>
+
+<section id="userCard" class="card"></section>
+
+</main>
+
+</div>
+
+
 <script>
-/*
- * QRCodeLite
- * --------------------------------------------------------------------------
- * Self-contained QR Code Model 2 encoder.
- * Byte-mode encoding, UTF-8 input, QR versions 1-20, Error Correction L,
- * Reed-Solomon error correction, automatic version and mask selection.
- *
- * No CDN, remote API, network request, database or external dependency.
- * Produces a genuine QR Code module matrix suitable for canvas rendering.
- * --------------------------------------------------------------------------
- */
-const QRCodeLite=(()=>{
-"use strict";
+/* ============================================================
+   SELF-CONTAINED QR CODE GENERATOR
+   QR Code Model 2
+   Byte mode
+   Error correction level L
+   Versions 1-10
 
-const ALIGN=[
- [],
- [],
- [6,18],[6,22],[6,26],[6,30],[6,34],
- [6,22,38],[6,24,42],[6,26,46],[6,28,50],
- [6,30,54],[6,32,58],[6,34,62],[6,26,46,66],
- [6,26,48,70],[6,26,50,74],[6,30,54,78],
- [6,30,56,82],[6,30,58,86],[6,34,62,90]
-];
+   No CDN
+   No external scripts
+   No API calls
+============================================================ */
 
-/*
-  Error Correction Level L RS block structure, versions 1-20.
-  Each version contains [count,totalCodewords,dataCodewords,...].
-*/
+const QR=(()=>{
+
 const RS=[
- null,
- [1,26,19],
- [1,44,34],
- [1,70,55],
- [1,100,80],
- [1,134,108],
- [2,86,68],
- [2,98,78],
- [2,121,97],
- [2,146,116],
- [2,86,68,2,87,69],
- [4,101,81],
- [2,116,92,2,117,93],
- [4,133,107],
- [3,145,115,1,146,116],
- [5,109,87,1,110,88],
- [5,122,98,1,123,99],
- [1,135,107,5,136,108],
- [5,150,120,1,151,121],
- [3,141,113,4,142,114],
- [3,135,107,5,136,108]
+null,
+[[1,26,19]],
+[[1,44,34]],
+[[1,70,55]],
+[[1,100,80]],
+[[1,134,108]],
+[[2,86,68]],
+[[2,98,78]],
+[[2,121,97]],
+[[2,146,116]],
+[[2,86,68],[2,87,69]]
 ];
 
-const EXP=new Array(512),LOG=new Array(256);
-(()=>{
- let x=1;
- for(let i=0;i<255;i++){
-   EXP[i]=x;LOG[x]=i;
-   x<<=1;
-   if(x&256)x^=0x11d;
- }
- for(let i=255;i<512;i++)EXP[i]=EXP[i-255];
-})();
+const POS=[
+null,
+[],
+[6,18],
+[6,22],
+[6,26],
+[6,30],
+[6,34],
+[6,22,38],
+[6,24,42],
+[6,26,46],
+[6,28,50]
+];
 
-function mul(a,b){
- return a&&b?EXP[LOG[a]+LOG[b]]:0;
+const EXP=new Array(512);
+const LOG=new Array(256);
+
+let x=1;
+
+for(let i=0;i<255;i++){
+  EXP[i]=x;
+  LOG[x]=i;
+  x<<=1;
+  if(x&0x100)x^=0x11d;
 }
+
+for(let i=255;i<512;i++)
+  EXP[i]=EXP[i-255];
+
+
+function gm(a,b){
+  if(a===0||b===0)return 0;
+  return EXP[LOG[a]+LOG[b]];
+}
+
 
 function polyMul(a,b){
- const r=new Array(a.length+b.length-1).fill(0);
- for(let i=0;i<a.length;i++)
-   for(let j=0;j<b.length;j++)
-     r[i+j]^=mul(a[i],b[j]);
- return r;
+
+  const r=
+  new Array(a.length+b.length-1).fill(0);
+
+  for(let i=0;i<a.length;i++)
+    for(let j=0;j<b.length;j++)
+      r[i+j]^=gm(a[i],b[j]);
+
+  return r;
 }
+
 
 function generator(n){
- let g=[1];
- for(let i=0;i<n;i++)g=polyMul(g,[1,EXP[i]]);
- return g;
+
+  let g=[1];
+
+  for(let i=0;i<n;i++)
+    g=polyMul(g,[1,EXP[i]]);
+
+  return g;
 }
 
-function ecc(data,n){
- const gen=generator(n),res=new Array(n).fill(0);
- for(const value of data){
-   const factor=value^res[0];
-   res.shift();res.push(0);
-   for(let i=0;i<n;i++)res[i]^=mul(gen[i+1],factor);
- }
- return res;
-}
 
-function blocksFor(version){
- const row=RS[version],out=[];
- for(let i=0;i<row.length;i+=3)
-   for(let j=0;j<row[i];j++)
-     out.push({total:row[i+1],data:row[i+2]});
- return out;
-}
+function makeECC(data,count){
 
-function dataCapacity(version){
- return blocksFor(version).reduce((s,b)=>s+b.data,0);
-}
+  const gen=generator(count);
 
-function utf8(s){
- return Array.from(new TextEncoder().encode(s));
-}
+  const msg=[
+    ...data,
+    ...new Array(count).fill(0)
+  ];
 
-function pushBits(out,value,length){
- for(let i=length-1;i>=0;i--)out.push((value>>>i)&1);
-}
+  for(let i=0;i<data.length;i++){
 
-function makeCodewords(text,version){
- const bytes=utf8(text),capacity=dataCapacity(version);
- const bits=[];
- pushBits(bits,4,4);
- pushBits(bits,bytes.length,version<10?8:16);
- for(const b of bytes)pushBits(bits,b,8);
+    const factor=msg[i];
 
- const max=capacity*8;
- if(bits.length>max)throw new Error("Data exceeds QR capacity.");
+    if(factor===0)
+      continue;
 
- for(let i=0;i<Math.min(4,max-bits.length);i++)bits.push(0);
- while(bits.length%8)bits.push(0);
-
- const data=[];
- for(let i=0;i<bits.length;i+=8){
-   let b=0;
-   for(let j=0;j<8;j++)b=(b<<1)|bits[i+j];
-   data.push(b);
- }
-
- let pad=0;
- while(data.length<capacity)data.push((pad++&1)?0x11:0xec);
-
- const specs=blocksFor(version),db=[],eb=[];
- let p=0,maxD=0,maxE=0;
-
- for(const spec of specs){
-   const d=data.slice(p,p+spec.data);
-   p+=spec.data;
-   const e=ecc(d,spec.total-spec.data);
-   db.push(d);eb.push(e);
-   maxD=Math.max(maxD,d.length);
-   maxE=Math.max(maxE,e.length);
- }
-
- const result=[];
- for(let i=0;i<maxD;i++)
-   for(const d of db)
-     if(i<d.length)result.push(d[i]);
-
- for(let i=0;i<maxE;i++)
-   for(const e of eb)
-     if(i<e.length)result.push(e[i]);
-
- return result;
-}
-
-function bchFormat(data){
- let d=data<<10;
- const g=0x537;
- while(bitLength(d)-bitLength(g)>=0)
-   d^=g<<(bitLength(d)-bitLength(g));
- return ((data<<10)|d)^0x5412;
-}
-
-function bchVersion(data){
- let d=data<<12;
- const g=0x1f25;
- while(bitLength(d)-bitLength(g)>=0)
-   d^=g<<(bitLength(d)-bitLength(g));
- return (data<<12)|d;
-}
-
-function bitLength(x){
- let n=0;
- while(x){n++;x>>>=1}
- return n;
-}
-
-function maskFn(mask,r,c){
- switch(mask){
-   case 0:return (r+c)%2===0;
-   case 1:return r%2===0;
-   case 2:return c%3===0;
-   case 3:return (r+c)%3===0;
-   case 4:return (Math.floor(r/2)+Math.floor(c/3))%2===0;
-   case 5:return (r*c)%2+(r*c)%3===0;
-   case 6:return ((r*c)%2+(r*c)%3)%2===0;
-   case 7:return ((r*c)%3+(r+c)%2)%2===0;
- }
-}
-
-function finder(m,row,col){
- const n=m.length;
- for(let r=-1;r<=7;r++){
-   for(let c=-1;c<=7;c++){
-     const y=row+r,x=col+c;
-     if(y<0||y>=n||x<0||x>=n)continue;
-     m[y][x]=r>=0&&r<=6&&c>=0&&c<=6&&(
-       r===0||r===6||c===0||c===6||
-       (r>=2&&r<=4&&c>=2&&c<=4)
-     );
-   }
- }
-}
-
-function alignment(m,row,col){
- for(let r=-2;r<=2;r++)
-   for(let c=-2;c<=2;c++)
-     m[row+r][col+c]=Math.max(Math.abs(r),Math.abs(c))!==1;
-}
-
-function baseMatrix(version){
- const n=17+4*version;
- const m=Array.from({length:n},()=>Array(n).fill(null));
-
- finder(m,0,0);
- finder(m,n-7,0);
- finder(m,0,n-7);
-
- for(let i=8;i<n-8;i++){
-   if(m[6][i]===null)m[6][i]=i%2===0;
-   if(m[i][6]===null)m[i][6]=i%2===0;
- }
-
- const pos=ALIGN[version];
- for(const r of pos){
-   for(const c of pos){
-     if(m[r][c]!==null)continue;
-     alignment(m,r,c);
-   }
- }
-
- /* Reserve format information areas. */
- for(let i=0;i<9;i++){
-   if(m[i][8]===null)m[i][8]=false;
-   if(m[8][i]===null)m[8][i]=false;
- }
- for(let i=n-8;i<n;i++){
-   if(m[i][8]===null)m[i][8]=false;
-   if(m[8][i]===null)m[8][i]=false;
- }
-
- /* Fixed dark module. */
- m[n-8][8]=true;
-
- /* Reserve version information areas for version >= 7. */
- if(version>=7){
-   for(let r=0;r<6;r++)
-     for(let c=0;c<3;c++){
-       m[r][n-11+c]=false;
-       m[n-11+c][r]=false;
-     }
- }
-
- return m;
-}
-
-function setFormat(m,mask){
- /* L = binary 01; format payload = (01 << 3) | mask. */
- const bits=bchFormat((1<<3)|mask),n=m.length;
-
- for(let i=0;i<15;i++){
-   const v=((bits>>i)&1)!==0;
-
-   if(i<6)m[i][8]=v;
-   else if(i<8)m[i+1][8]=v;
-   else m[n-15+i][8]=v;
-
-   if(i<8)m[8][n-i-1]=v;
-   else if(i<9)m[8][15-i]=v;
-   else m[8][15-i-1]=v;
- }
- m[n-8][8]=true;
-}
-
-function setVersion(m,version){
- if(version<7)return;
- const bits=bchVersion(version),n=m.length;
- for(let i=0;i<18;i++){
-   const v=((bits>>i)&1)!==0;
-   m[Math.floor(i/3)][i%3+n-11]=v;
-   m[i%3+n-11][Math.floor(i/3)]=v;
- }
-}
-
-function placeData(m,bytes,mask){
- const n=m.length;
- let row=n-1,inc=-1,byteIndex=0,bitIndex=7;
-
- for(let col=n-1;col>0;col-=2){
-   if(col===6)col--;
-
-   while(true){
-     for(let c=0;c<2;c++){
-       const x=col-c;
-       if(m[row][x]===null){
-         let dark=false;
-         if(byteIndex<bytes.length)
-           dark=((bytes[byteIndex]>>>bitIndex)&1)!==0;
-
-         if(maskFn(mask,row,x))dark=!dark;
-         m[row][x]=dark;
-
-         bitIndex--;
-         if(bitIndex<0){byteIndex++;bitIndex=7}
-       }
-     }
-
-     row+=inc;
-     if(row<0||row>=n){
-       row-=inc;
-       inc=-inc;
-       break;
-     }
-   }
- }
-}
-
-function penalty(m){
- const n=m.length;
- let score=0;
-
- /* Rule 1: runs in rows. */
- for(let r=0;r<n;r++){
-   let runColor=m[r][0],run=1;
-   for(let c=1;c<n;c++){
-     if(m[r][c]===runColor)run++;
-     else{
-       if(run>=5)score+=3+run-5;
-       runColor=m[r][c];run=1;
-     }
-   }
-   if(run>=5)score+=3+run-5;
- }
-
- /* Rule 1: runs in columns. */
- for(let c=0;c<n;c++){
-   let runColor=m[0][c],run=1;
-   for(let r=1;r<n;r++){
-     if(m[r][c]===runColor)run++;
-     else{
-       if(run>=5)score+=3+run-5;
-       runColor=m[r][c];run=1;
-     }
-   }
-   if(run>=5)score+=3+run-5;
- }
-
- /* Rule 2: 2x2 blocks. */
- for(let r=0;r<n-1;r++)
-   for(let c=0;c<n-1;c++){
-     const v=m[r][c];
-     if(v===m[r+1][c]&&v===m[r][c+1]&&v===m[r+1][c+1])score+=3;
-   }
-
- /* Rule 3: finder-like 1:1:3:1:1 sequences with quiet light area. */
- const patternAt=a=>{
-   const p=[true,false,true,true,true,false,true];
-   for(let i=0;i<7;i++)if(a[i]!==p[i])return false;
-   return true;
- };
-
- for(let r=0;r<n;r++){
-   for(let c=0;c<=n-7;c++){
-     const a=m[r].slice(c,c+7);
-     if(patternAt(a)){
-       const before=c>=4&&!m[r][c-1]&&!m[r][c-2]&&!m[r][c-3]&&!m[r][c-4];
-       const after=c+10<n&&!m[r][c+7]&&!m[r][c+8]&&!m[r][c+9]&&!m[r][c+10];
-       if(before||after)score+=40;
-     }
-   }
- }
-
- for(let c=0;c<n;c++){
-   for(let r=0;r<=n-7;r++){
-     const a=[];
-     for(let i=0;i<7;i++)a.push(m[r+i][c]);
-     if(patternAt(a)){
-       const before=r>=4&&!m[r-1][c]&&!m[r-2][c]&&!m[r-3][c]&&!m[r-4][c];
-       const after=r+10<n&&!m[r+7][c]&&!m[r+8][c]&&!m[r+9][c]&&!m[r+10][c];
-       if(before||after)score+=40;
-     }
-   }
- }
-
- /* Rule 4: balance of dark and light modules. */
- let dark=0;
- for(const row of m)for(const cell of row)if(cell)dark++;
- const percent=dark*100/(n*n);
- score+=Math.floor(Math.abs(percent-50)/5)*10;
-
- return score;
-}
-
-function matrix(text){
- const byteLen=utf8(text).length;
- let version=0;
-
- for(let v=1;v<=20;v++){
-   const countBits=v<10?8:16;
-   if(byteLen<(1<<countBits)&&4+countBits+byteLen*8<=dataCapacity(v)*8){
-     version=v;break;
-   }
- }
- if(!version)
-   throw new Error("QR payload is too large. Shorten the entered values or the page URL.");
-
- const codewords=makeCodewords(text,version);
- let best=null,bestScore=Infinity;
-
- for(let mask=0;mask<8;mask++){
-   const m=baseMatrix(version);
-   setFormat(m,mask);
-   setVersion(m,version);
-   placeData(m,codewords,mask);
-   const p=penalty(m);
-   if(p<bestScore){bestScore=p;best=m}
- }
-
- return best;
-}
-
-function draw(canvas,text,size=260){
- const m=matrix(text),n=m.length,quiet=4,total=n+quiet*2;
- const pixel=Math.max(1,Math.floor(size/total));
- const real=pixel*total;
-
- canvas.width=real;
- canvas.height=real;
-
- const ctx=canvas.getContext("2d",{alpha:false});
- ctx.fillStyle="#fff";
- ctx.fillRect(0,0,real,real);
- ctx.fillStyle="#000";
-
- for(let r=0;r<n;r++)
-   for(let c=0;c<n;c++)
-     if(m[r][c])
-       ctx.fillRect((c+quiet)*pixel,(r+quiet)*pixel,pixel,pixel);
-
- return {version:(n-17)/4,modules:n};
-}
-
-return{matrix,draw};
-})();
-
-/* -------------------------------------------------------------------------
-   Application
-   ------------------------------------------------------------------------- */
-(()=>{
-"use strict";
-
-const $=id=>document.getElementById(id);
-const installerView=$("installerView");
-const userView=$("userView");
-const formGrid=$("formGrid");
-const form=$("configForm");
-const status=$("formStatus");
-const history=$("history");
-const historyEmpty=$("historyEmpty");
-const clearHistory=$("clearHistory");
-const userCard=$("userCard");
-
-const CHANNEL_COUNT=16;
-
-/* Generate the 16 locked, pre-labelled channel rows. */
-for(let i=1;i<=CHANNEL_COUNT;i++){
- const row=document.createElement("div");
- row.className="form-row";
- row.innerHTML=
-   `<label for="channel${i}">Channel ${i}</label>`+
-   `<div class="field">`+
-   `<input id="channel${i}" type="text" maxlength="80" `+
-   `placeholder="Gauge Factor, e.g. GF2.01" aria-label="Channel ${i} Gauge Factor">`+
-   `</div>`;
- formGrid.appendChild(row);
-}
-
-function escapeHtml(value){
- return String(value??"")
-   .replace(/&/g,"&amp;")
-   .replace(/</g,"&lt;")
-   .replace(/>/g,"&gt;")
-   .replace(/"/g,"&quot;")
-   .replace(/'/g,"&#039;");
-}
-
-/*
-  Compact payload schema:
-  {
-    s: Specimen ID,
-    g: GTRS Number,
-    i: Installer Name,
-    c: [[channelNumber,gaugeFactor], ...]
+    for(let j=0;j<gen.length;j++)
+      msg[i+j]^=gm(gen[j],factor);
   }
 
-  Blank metadata values and blank channels are omitted.
-*/
-function collectPayload(){
- const specimen=$("specimenId").value.trim();
- if(!specimen)throw new Error("Specimen ID is required.");
-
- const payload={s:specimen};
- const gtrs=$("gtrsNumber").value.trim();
- const installer=$("installerName").value.trim();
-
- if(gtrs)payload.g=gtrs;
- if(installer)payload.i=installer;
-
- const channels=[];
- for(let n=1;n<=CHANNEL_COUNT;n++){
-   const value=$(`channel${n}`).value.trim();
-   if(value)channels.push([n,value]);
- }
- if(channels.length)payload.c=channels;
-
- return payload;
+  return msg.slice(data.length);
 }
 
-function encodePayload(payload){
- const json=JSON.stringify(payload);
- const bytes=new TextEncoder().encode(json);
- let binary="";
- const step=0x8000;
 
- for(let i=0;i<bytes.length;i+=step)
-   binary+=String.fromCharCode(...bytes.subarray(i,i+step));
+function blocks(version){
 
- /* URL-safe Base64 removes unnecessary percent-encoding. */
- return btoa(binary)
-   .replace(/\+/g,"-")
-   .replace(/\//g,"_")
-   .replace(/=+$/,"");
+  const list=[];
+
+  for(const b of RS[version])
+
+    for(let i=0;i<b[0];i++)
+
+      list.push({
+        total:b[1],
+        data:b[2]
+      });
+
+  return list;
 }
 
-function decodePayload(encoded){
- let b64=encoded.replace(/-/g,"+").replace(/_/g,"/");
- while(b64.length%4)b64+="=";
 
- const binary=atob(b64);
- const bytes=new Uint8Array(binary.length);
- for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+function capacity(version){
 
- return JSON.parse(new TextDecoder().decode(bytes));
+  return blocks(version)
+  .reduce((n,b)=>n+b.data,0);
 }
 
-function makeTargetUrl(encoded){
- const url=new URL(location.href);
- url.search="";
- url.hash="";
- url.searchParams.set("d",encoded);
- return url.href;
+
+function bitsPush(arr,value,count){
+
+  for(let i=count-1;i>=0;i--)
+    arr.push((value>>>i)&1);
 }
 
-function setStatus(message,type=""){
- status.textContent=message;
- status.className=`status ${type}`;
+
+function bytes(text){
+
+  return Array.from(
+    new TextEncoder().encode(text)
+  );
 }
 
-function addHistoryItem(payload,url){
- historyEmpty.classList.add("hidden");
- clearHistory.classList.remove("hidden");
 
- const item=document.createElement("article");
- item.className="history-item";
+function codewords(text,version){
 
- const head=document.createElement("div");
- head.className="history-head";
+  const input=bytes(text);
 
- const title=document.createElement("h3");
- title.textContent=payload.s;
+  const maxBytes=
+    capacity(version);
 
- const badge=document.createElement("span");
- badge.className="badge";
- badge.textContent=`${payload.c?.length||0} active channel${(payload.c?.length||0)===1?"":"s"}`;
+  const bitArray=[];
 
- head.append(title,badge);
+  /* Byte mode */
+  bitsPush(bitArray,4,4);
 
- const layout=document.createElement("div");
- layout.className="qr-layout";
+  /* Character count */
+  bitsPush(
+    bitArray,
+    input.length,
+    version<=9?8:16
+  );
 
- const qrWrap=document.createElement("div");
- qrWrap.className="qr-wrap";
+  for(const b of input)
+    bitsPush(bitArray,b,8);
 
- const canvas=document.createElement("canvas");
- canvas.setAttribute("aria-label",`QR code for specimen ${payload.s}`);
- qrWrap.appendChild(canvas);
 
- const detail=document.createElement("div");
+  const maxBits=maxBytes*8;
 
- const urlBox=document.createElement("div");
- urlBox.className="url-box";
- urlBox.textContent=url;
+  if(bitArray.length>maxBits)
+    throw Error(
+      "QR data exceeds supported capacity."
+    );
 
- const controls=document.createElement("div");
- controls.className="actions";
- controls.style.marginTop="0";
 
- const copy=document.createElement("button");
- copy.type="button";
- copy.className="secondary";
- copy.textContent="Copy Link";
- copy.addEventListener("click",async()=>{
-   try{
-     await navigator.clipboard.writeText(url);
-     copy.textContent="Copied";
-     setTimeout(()=>copy.textContent="Copy Link",1200);
-   }catch{
-     const ta=document.createElement("textarea");
-     ta.value=url;
-     ta.style.position="fixed";
-     ta.style.opacity="0";
-     document.body.appendChild(ta);
-     ta.select();
-     document.execCommand("copy");
-     ta.remove();
-     copy.textContent="Copied";
-     setTimeout(()=>copy.textContent="Copy Link",1200);
-   }
- });
+  /* Terminator */
+  for(
+    let i=0;
+    i<4 &&
+    bitArray.length<maxBits;
+    i++
+  )
+    bitArray.push(0);
 
- const open=document.createElement("a");
- open.className="button secondary";
- open.href=url;
- open.target="_blank";
- open.rel="noopener";
- open.textContent="Open Read-Only View";
 
- controls.append(copy,open);
+  /* Byte alignment */
+  while(bitArray.length%8)
+    bitArray.push(0);
 
- const meta=document.createElement("p");
- meta.className="meta";
- meta.textContent="QR code encodes the complete read-only configuration URL.";
 
- detail.append(urlBox,controls,meta);
- layout.append(qrWrap,detail);
- item.append(head,layout);
- history.prepend(item);
+  const data=[];
 
- const info=QRCodeLite.draw(canvas,url,280);
- return info;
+  for(
+    let i=0;
+    i<bitArray.length;
+    i+=8
+  ){
+
+    let b=0;
+
+    for(let j=0;j<8;j++)
+      b=(b<<1)|bitArray[i+j];
+
+    data.push(b);
+  }
+
+
+  let pad=true;
+
+  while(data.length<maxBytes){
+
+    data.push(
+      pad?0xec:0x11
+    );
+
+    pad=!pad;
+  }
+
+
+  const specs=blocks(version);
+
+  const db=[];
+  const eb=[];
+
+  let offset=0;
+  let maxD=0;
+  let maxE=0;
+
+
+  for(const spec of specs){
+
+    const d=
+      data.slice(
+        offset,
+        offset+spec.data
+      );
+
+    offset+=spec.data;
+
+    const e=
+      makeECC(
+        d,
+        spec.total-spec.data
+      );
+
+    db.push(d);
+    eb.push(e);
+
+    maxD=Math.max(
+      maxD,
+      d.length
+    );
+
+    maxE=Math.max(
+      maxE,
+      e.length
+    );
+  }
+
+
+  const out=[];
+
+
+  /* Interleave data */
+  for(let i=0;i<maxD;i++)
+
+    for(const b of db)
+
+      if(i<b.length)
+        out.push(b[i]);
+
+
+  /* Interleave ECC */
+  for(let i=0;i<maxE;i++)
+
+    for(const b of eb)
+
+      if(i<b.length)
+        out.push(b[i]);
+
+
+  return out;
 }
 
-form.addEventListener("submit",e=>{
- e.preventDefault();
- setStatus("");
 
- try{
-   const payload=collectPayload();
-   const encoded=encodePayload(payload);
-   const url=makeTargetUrl(encoded);
-   const info=addHistoryItem(payload,url);
+function bitLength(v){
 
-   setStatus(
-     `QR code generated for ${payload.s} — QR Version ${info.version}.`,
-     "success"
-   );
+  let n=0;
 
-   /*
-     Deliberately do not reset the form.
-     The installer can modify the current data and generate another specimen,
-     while all previous QR codes remain visible in the session log.
-   */
- }catch(err){
-   console.error(err);
-   setStatus(err?.message||"Unable to generate QR code.","error");
- }
-});
+  while(v){
+    n++;
+    v>>>=1;
+  }
 
-clearHistory.addEventListener("click",()=>{
- history.replaceChildren();
- historyEmpty.classList.remove("hidden");
- clearHistory.classList.add("hidden");
- setStatus("Session history cleared.");
-});
-
-function validatePayload(p){
- if(!p||typeof p!=="object"||Array.isArray(p))
-   throw new Error("The QR configuration payload is invalid.");
-
- if(typeof p.s!=="string"||!p.s.trim())
-   throw new Error("The QR configuration does not contain a valid Specimen ID.");
-
- if(p.g!==undefined&&typeof p.g!=="string")
-   throw new Error("Invalid GTRS Number.");
-
- if(p.i!==undefined&&typeof p.i!=="string")
-   throw new Error("Invalid Installer Name.");
-
- if(p.c!==undefined){
-   if(!Array.isArray(p.c))
-     throw new Error("Invalid channel configuration.");
-
-   for(const entry of p.c){
-     if(
-       !Array.isArray(entry)||
-       entry.length!==2||
-       !Number.isInteger(entry[0])||
-       entry[0]<1||
-       entry[0]>16||
-       typeof entry[1]!=="string"
-     )throw new Error("Invalid channel entry.");
-   }
- }
-
- return p;
+  return n;
 }
 
-function renderUserView(payload){
- const channels=payload.c||[];
 
- const metaRows=[
-   ["Specimen ID",payload.s],
-   ["GTRS Number",payload.g||""],
-   ["Installer Name",payload.i||""]
- ].filter(([,value])=>value!=="");
+function BCHFormat(data){
 
- let html=`
-   <div class="table-wrap">
-     <table class="readonly-table">
-       <tbody>
-         ${metaRows.map(([key,value])=>
-           `<tr><th>${escapeHtml(key)}</th><td>${escapeHtml(value)}</td></tr>`
-         ).join("")}
-       </tbody>
-     </table>
-   </div>
-   <div class="config-section">
-     <h2>Channel Configuration</h2>
- `;
+  let d=data<<10;
 
- if(channels.length){
-   html+=`
-     <div class="table-wrap">
-       <table>
-         <thead>
-           <tr>
-             <th>Channel</th>
-             <th>Gauge Factor</th>
-           </tr>
-         </thead>
-         <tbody>
-           ${channels.map(([channel,gauge])=>
-             `<tr>
-                <td>Channel ${escapeHtml(channel)}</td>
-                <td>${escapeHtml(gauge)}</td>
-              </tr>`
-           ).join("")}
-         </tbody>
-       </table>
-     </div>
-   `;
- }else{
-   html+=`<p class="history-empty">No channel Gauge Factor values were configured.</p>`;
- }
+  const g=0x537;
 
- html+=`
-   </div>
-   <p class="footer-note">
-     Read-only configuration. Blank fields and unconfigured channels are not included in the QR payload.
-   </p>
- `;
+  while(
+    bitLength(d)>=
+    bitLength(g)
+  )
 
- userCard.innerHTML=html;
+    d^=
+      g<<(
+        bitLength(d)-
+        bitLength(g)
+      );
+
+  return(
+    ((data<<10)|d)
+    ^0x5412
+  );
 }
 
-function renderPayloadError(message){
- userCard.innerHTML=`
-   <div class="error-panel">
-     <strong>Unable to open configuration.</strong><br>
-     ${escapeHtml(message)}
-   </div>
- `;
+
+function maskFunc(mask,r,c){
+
+  switch(mask){
+
+    case 0:
+      return (r+c)%2===0;
+
+    case 1:
+      return r%2===0;
+
+    case 2:
+      return c%3===0;
+
+    case 3:
+      return (r+c)%3===0;
+
+    case 4:
+      return(
+        Math.floor(r/2)+
+        Math.floor(c/3)
+      )%2===0;
+
+    case 5:
+      return(
+        (r*c)%2+
+        (r*c)%3
+      )===0;
+
+    case 6:
+      return(
+        (
+          (r*c)%2+
+          (r*c)%3
+        )%2
+      )===0;
+
+    case 7:
+      return(
+        (
+          (r*c)%3+
+          (r+c)%2
+        )%2
+      )===0;
+  }
 }
+
+
+function finder(m,row,col){
+
+  const n=m.length;
+
+  for(let r=-1;r<=7;r++)
+
+    for(let c=-1;c<=7;c++){
+
+      const y=row+r;
+      const x=col+c;
+
+      if(
+        y<0||
+        y>=n||
+        x<0||
+        x>=n
+      )
+        continue;
+
+      m[y][x]=
+
+        r>=0&&
+        r<=6&&
+        c>=0&&
+        c<=6&&
+
+        (
+          r===0||
+          r===6||
+          c===0||
+          c===6||
+
+          (
+            r>=2&&
+            r<=4&&
+            c>=2&&
+            c<=4
+          )
+        );
+    }
+}
+
+
+function alignment(m,r,c){
+
+  for(let y=-2;y<=2;y++)
+
+    for(let x=-2;x<=2;x++)
+
+      m[r+y][c+x]=
+        Math.max(
+          Math.abs(y),
+          Math.abs(x)
+        )!==1;
+}
+
+
+function setup(version){
+
+  const n=
+    17+4*version;
+
+  const m=
+    Array.from(
+      {length:n},
+      ()=>
+      Array(n).fill(null)
+    );
+
+
+  finder(m,0,0);
+
+  finder(
+    m,
+    n-7,
+    0
+  );
+
+  finder(
+    m,
+    0,
+    n-7
+  );
+
+
+  /* Timing patterns */
+
+  for(let i=8;i<n-8;i++){
+
+    if(m[6][i]===null)
+      m[6][i]=
+        i%2===0;
+
+    if(m[i][6]===null)
+      m[i][6]=
+        i%2===0;
+  }
+
+
+  /* Alignment patterns */
+
+  for(const r of POS[version])
+
+    for(const c of POS[version]){
+
+      if(
+        m[r][c]!==null
+      )
+        continue;
+
+      alignment(m,r,c);
+    }
+
+
+  /* Format information reservation */
+
+  for(let i=0;i<9;i++){
+
+    if(m[i][8]===null)
+      m[i][8]=false;
+
+    if(m[8][i]===null)
+      m[8][i]=false;
+  }
+
+
+  for(let i=n-8;i<n;i++){
+
+    if(m[i][8]===null)
+      m[i][8]=false;
+
+    if(m[8][i]===null)
+      m[8][i]=false;
+  }
+
+
+  /* Mandatory dark module */
+
+  m[n-8][8]=true;
+
+
+  return m;
+}
+
+
+function formatInfo(m,mask){
+
+  /*
+    Error correction L has format
+    level value binary 01.
+  */
+
+  const data=
+    (1<<3)|mask;
+
+  const bits=
+    BCHFormat(data);
+
+  const n=m.length;
+
+
+  for(let i=0;i<15;i++){
+
+    const dark=
+      ((bits>>i)&1)
+      ===1;
+
+
+    /* Vertical */
+
+    if(i<6)
+
+      m[i][8]=dark;
+
+    else if(i<8)
+
+      m[i+1][8]=dark;
+
+    else
+
+      m[
+        n-15+i
+      ][8]=dark;
+
+
+    /* Horizontal */
+
+    if(i<8)
+
+      m[8][
+        n-i-1
+      ]=dark;
+
+    else if(i===8)
+
+      m[8][7]=dark;
+
+    else
+
+      m[8][
+        14-i
+      ]=dark;
+  }
+
+
+  m[n-8][8]=true;
+}
+
+
+function placeData(
+  m,
+  data,
+  mask
+){
+
+  const n=m.length;
+
+  let row=n-1;
+
+  let direction=-1;
+
+  let byteIndex=0;
+
+  let bitIndex=7;
+
+
+  for(
+    let col=n-1;
+    col>0;
+    col-=2
+  ){
+
+    if(col===6)
+      col--;
+
+
+    while(true){
+
+
+      for(let i=0;i<2;i++){
+
+        const c=col-i;
+
+
+        if(
+          m[row][c]
+          !==null
+        )
+          continue;
+
+
+        let dark=false;
+
+
+        if(
+          byteIndex<
+          data.length
+        )
+
+          dark=
+            (
+              (
+                data[
+                  byteIndex
+                ]
+                >>>bitIndex
+              )&1
+            )===1;
+
+
+        if(
+          maskFunc(
+            mask,
+            row,
+            c
+          )
+        )
+
+          dark=!dark;
+
+
+        m[row][c]=dark;
+
+
+        bitIndex--;
+
+
+        if(bitIndex<0){
+
+          byteIndex++;
+
+          bitIndex=7;
+        }
+      }
+
+
+      row+=direction;
+
+
+      if(
+        row<0||
+        row>=n
+      ){
+
+        row-=direction;
+
+        direction=
+          -direction;
+
+        break;
+      }
+    }
+  }
+}
+
+
+function penalty(m){
+
+  const n=m.length;
+
+  let score=0;
+
+
+  /* Long runs */
+
+  for(let r=0;r<n;r++){
+
+    let color=m[r][0];
+
+    let run=1;
+
+
+    for(let c=1;c<n;c++){
+
+      if(
+        m[r][c]===
+        color
+      )
+
+        run++;
+
+      else{
+
+        if(run>=5)
+
+          score+=
+            3+
+            run-5;
+
+        color=
+          m[r][c];
+
+        run=1;
+      }
+    }
+
+
+    if(run>=5)
+
+      score+=
+        3+
+        run-5;
+  }
+
+
+  for(let c=0;c<n;c++){
+
+    let color=
+      m[0][c];
+
+    let run=1;
+
+
+    for(let r=1;r<n;r++){
+
+      if(
+        m[r][c]===
+        color
+      )
+
+        run++;
+
+      else{
+
+        if(run>=5)
+
+          score+=
+            3+
+            run-5;
+
+        color=
+          m[r][c];
+
+        run=1;
+      }
+    }
+
+
+    if(run>=5)
+
+      score+=
+        3+
+        run-5;
+  }
+
+
+  /* 2x2 */
+
+  for(let r=0;r<n-1;r++)
+
+    for(let c=0;c<n-1;c++){
+
+      const v=
+        m[r][c];
+
+      if(
+        v===m[r+1][c]&&
+        v===m[r][c+1]&&
+        v===m[r+1][c+1]
+      )
+
+        score+=3;
+    }
+
+
+  /* Finder-like patterns */
+
+  const pattern=
+  [
+    true,
+    false,
+    true,
+    true,
+    true,
+    false,
+    true
+  ];
+
+
+  function matches(a){
+
+    for(let i=0;i<7;i++)
+
+      if(
+        a[i]!==
+        pattern[i]
+      )
+
+        return false;
+
+    return true;
+  }
+
+
+  for(let r=0;r<n;r++)
+
+    for(let c=0;c<=n-7;c++){
+
+      if(
+        matches(
+          m[r].slice(
+            c,
+            c+7
+          )
+        )
+      ){
+
+        let left=false;
+        let right=false;
+
+
+        if(c>=4)
+
+          left=
+            !m[r][c-1]&&
+            !m[r][c-2]&&
+            !m[r][c-3]&&
+            !m[r][c-4];
+
+
+        if(c+10<n)
+
+          right=
+            !m[r][c+7]&&
+            !m[r][c+8]&&
+            !m[r][c+9]&&
+            !m[r][c+10];
+
+
+        if(left||right)
+
+          score+=40;
+      }
+    }
+
+
+  for(let c=0;c<n;c++)
+
+    for(let r=0;r<=n-7;r++){
+
+      const a=[];
+
+      for(let i=0;i<7;i++)
+        a.push(
+          m[r+i][c]
+        );
+
+
+      if(matches(a)){
+
+        let top=false;
+        let bottom=false;
+
+
+        if(r>=4)
+
+          top=
+            !m[r-1][c]&&
+            !m[r-2][c]&&
+            !m[r-3][c]&&
+            !m[r-4][c];
+
+
+        if(r+10<n)
+
+          bottom=
+            !m[r+7][c]&&
+            !m[r+8][c]&&
+            !m[r+9][c]&&
+            !m[r+10][c];
+
+
+        if(top||bottom)
+
+          score+=40;
+      }
+    }
+
+
+  /* Dark/light balance */
+
+  let dark=0;
+
+
+  for(const row of m)
+
+    for(const v of row)
+
+      if(v)
+        dark++;
+
+
+  const pct=
+    dark*100/
+    (n*n);
+
+
+  score+=
+    Math.floor(
+      Math.abs(
+        pct-50
+      )/5
+    )*10;
+
+
+  return score;
+}
+
+
+function create(text){
+
+  const input=
+    bytes(text);
+
+  let version=0;
+
+
+  for(let v=1;v<=10;v++){
+
+    const cap=
+      capacity(v)*8;
+
+    const required=
+      4+
+      (v<=9?8:16)+
+      input.length*8;
+
+
+    if(required<=cap){
+
+      version=v;
+
+      break;
+    }
+  }
+
+
+  if(!version)
+
+    throw Error(
+      "The generated URL is too large for the embedded QR encoder. Shorten the entered field values."
+    );
+
+
+  const data=
+    codewords(
+      text,
+      version
+    );
+
+
+  let best=null;
+
+  let bestScore=
+    Infinity;
+
+
+  for(let mask=0;mask<8;mask++){
+
+    const m=
+      setup(version);
+
+
+    formatInfo(
+      m,
+      mask
+    );
+
+
+    placeData(
+      m,
+      data,
+      mask
+    );
+
+
+    const score=
+      penalty(m);
+
+
+    if(
+      score<
+      bestScore
+    ){
+
+      best=m;
+
+      bestScore=
+        score;
+    }
+  }
+
+
+  return{
+    matrix:best,
+    version
+  };
+}
+
+
+function draw(
+  canvas,
+  text
+){
+
+  const qr=
+    create(text);
+
+  const m=
+    qr.matrix;
+
+  const modules=
+    m.length;
+
+
+  /*
+    4 modules is the QR specification minimum quiet zone.
+    We render 6 for improved phone-camera acquisition.
+  */
+
+  const quiet=6;
+
+
+  /*
+    Use fixed 10 physical canvas pixels per QR module.
+    This creates a crisp high resolution source image.
+  */
+
+  const scale=10;
+
+
+  const total=
+    modules+
+    quiet*2;
+
+
+  canvas.width=
+    total*scale;
+
+  canvas.height=
+    total*scale;
+
+
+  /*
+    CSS display size.
+    Underlying PNG remains high resolution.
+  */
+
+  canvas.style.width=
+    "300px";
+
+  canvas.style.height=
+    "300px";
+
+
+  const ctx=
+    canvas.getContext(
+      "2d",
+      {
+        alpha:false
+      }
+    );
+
+
+  ctx.imageSmoothingEnabled=
+    false;
+
+
+  ctx.fillStyle=
+    "#ffffff";
+
+
+  ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  ctx.fillStyle=
+    "#000000";
+
+
+  for(
+    let r=0;
+    r<modules;
+    r++
+  )
+
+    for(
+      let c=0;
+      c<modules;
+      c++
+    )
+
+      if(m[r][c])
+
+        ctx.fillRect(
+
+          (c+quiet)*
+          scale,
+
+          (r+quiet)*
+          scale,
+
+          scale,
+          scale
+
+        );
+
+
+  return{
+    version:
+      qr.version,
+
+    modules
+  };
+}
+
+
+return{
+  create,
+  draw
+};
+
+})();
+
+
+
+/* ============================================================
+   APPLICATION
+============================================================ */
+
+(()=>{
+
+"use strict";
+
+
+const $=
+  id=>
+  document.getElementById(id);
+
+
+const installerView=
+  $("installerView");
+
+const userView=
+  $("userView");
+
+const form=
+  $("configForm");
+
+const formGrid=
+  $("formGrid");
+
+const status=
+  $("status");
+
+const history=
+  $("history");
+
+const historyEmpty=
+  $("historyEmpty");
+
+const clearHistory=
+  $("clearHistory");
+
+const userCard=
+  $("userCard");
+
+
+
+/* ============================================================
+   BUILD CHANNELS 1-16
+============================================================ */
+
+
+for(
+  let i=1;
+  i<=16;
+  i++
+){
+
+  const row=
+    document.createElement(
+      "div"
+    );
+
+
+  row.className=
+    "form-row";
+
+
+  row.innerHTML=
+
+    `<label for="channel${i}">
+       Channel ${i}
+     </label>
+
+     <div class="field">
+
+       <input
+       id="channel${i}"
+       maxlength="80"
+       placeholder="Gauge Factor, e.g. GF2.01">
+
+     </div>`;
+
+
+  formGrid.appendChild(
+    row
+  );
+}
+
+
+
+/* ============================================================
+   HTML ESCAPE
+============================================================ */
+
+
+function esc(value){
+
+  return String(
+    value??""
+  )
+
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+
+  .replace(
+    /</g,
+    "&lt;"
+  )
+
+  .replace(
+    />/g,
+    "&gt;"
+  )
+
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+}
+
+
+
+/* ============================================================
+   PAYLOAD
+============================================================ */
+
+
+function collect(){
+
+  const specimen=
+    $("specimenId")
+    .value
+    .trim();
+
+
+  if(!specimen)
+
+    throw Error(
+      "Specimen ID is required."
+    );
+
+
+  /*
+    Short property names keep
+    QR payload size low.
+
+    s = specimen
+    g = GTRS
+    i = installer
+    c = channels
+  */
+
+
+  const data={
+    s:specimen
+  };
+
+
+  const g=
+    $("gtrsNumber")
+    .value
+    .trim();
+
+
+  const installer=
+    $("installerName")
+    .value
+    .trim();
+
+
+  if(g)
+    data.g=g;
+
+
+  if(installer)
+    data.i=installer;
+
+
+  const channels=[];
+
+
+  for(
+    let i=1;
+    i<=16;
+    i++
+  ){
+
+    const value=
+
+      $(
+        "channel"+i
+      )
+
+      .value
+      .trim();
+
+
+    /*
+      Blank channels are
+      completely stripped.
+    */
+
+
+    if(value)
+
+      channels.push(
+        [
+          i,
+          value
+        ]
+      );
+  }
+
+
+  if(
+    channels.length
+  )
+
+    data.c=
+      channels;
+
+
+  return data;
+}
+
+
+
+/* ============================================================
+   BASE64 URL ENCODING
+============================================================ */
+
+
+function encode(data){
+
+  const json=
+    JSON.stringify(
+      data
+    );
+
+
+  const bytes=
+    new TextEncoder()
+    .encode(
+      json
+    );
+
+
+  let binary="";
+
+
+  for(
+    const byte of bytes
+  )
+
+    binary+=
+      String
+      .fromCharCode(
+        byte
+      );
+
+
+  return btoa(binary)
+
+    .replace(
+      /\+/g,
+      "-"
+    )
+
+    .replace(
+      /\//g,
+      "_"
+    )
+
+    .replace(
+      /=+$/g,
+      ""
+    );
+}
+
+
+
+function decode(encoded){
+
+  let b64=
+    encoded
+
+    .replace(
+      /-/g,
+      "+"
+    )
+
+    .replace(
+      /_/g,
+      "/"
+    );
+
+
+  while(
+    b64.length%4
+  )
+
+    b64+="=";
+
+
+  const binary=
+    atob(
+      b64
+    );
+
+
+  const bytes=
+    new Uint8Array(
+      binary.length
+    );
+
+
+  for(
+    let i=0;
+    i<binary.length;
+    i++
+  )
+
+    bytes[i]=
+      binary
+      .charCodeAt(
+        i
+      );
+
+
+  return JSON.parse(
+
+    new TextDecoder()
+    .decode(
+      bytes
+    )
+
+  );
+}
+
+
+
+/* ============================================================
+   CREATE UNIQUE END USER URL
+============================================================ */
+
+
+function targetURL(encoded){
+
+  const url=
+    new URL(
+      location.href
+    );
+
+
+  url.search=
+    "";
+
+
+  url.hash=
+    "";
+
+
+  url.searchParams.set(
+    "d",
+    encoded
+  );
+
+
+  return url.href;
+}
+
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+
+function setStatus(
+  message,
+  type=""
+){
+
+  status.textContent=
+    message;
+
+
+  status.className=
+    "status "+type;
+}
+
+
+
+/* ============================================================
+   DOWNLOAD QR PNG
+============================================================ */
+
+
+function downloadPNG(
+  canvas,
+  specimen
+){
+
+  const link=
+    document.createElement(
+      "a"
+    );
+
+
+  const safeName=
+
+    specimen
+
+    .replace(
+      /[^a-z0-9_-]/gi,
+      "_"
+    );
+
+
+  link.download=
+
+    safeName+
+    "_QR.png";
+
+
+  link.href=
+
+    canvas
+    .toDataURL(
+      "image/png"
+    );
+
+
+  link.click();
+}
+
+
+
+/* ============================================================
+   HISTORY ENTRY
+============================================================ */
+
+
+function addHistory(
+  payload,
+  url
+){
+
+  historyEmpty
+  .classList
+  .add(
+    "hidden"
+  );
+
+
+  clearHistory
+  .classList
+  .remove(
+    "hidden"
+  );
+
+
+  const item=
+    document.createElement(
+      "article"
+    );
+
+
+  item.className=
+    "history-item";
+
+
+  const title=
+
+    document.createElement(
+      "div"
+    );
+
+
+  title.className=
+    "history-title";
+
+
+  const h3=
+
+    document.createElement(
+      "h3"
+    );
+
+
+  h3.textContent=
+    payload.s;
+
+
+  const badge=
+
+    document.createElement(
+      "span"
+    );
+
+
+  badge.className=
+    "badge";
+
+
+  const count=
+
+    payload.c
+    ?.length
+    ||0;
+
+
+  badge.textContent=
+
+    count+
+    " active channel"+
+    (
+      count===1
+      ?""
+      :"s"
+    );
+
+
+  title.append(
+    h3,
+    badge
+  );
+
+
+
+  const layout=
+
+    document.createElement(
+      "div"
+    );
+
+
+  layout.className=
+    "qr-layout";
+
+
+
+  const qrBox=
+
+    document.createElement(
+      "div"
+    );
+
+
+  qrBox.className=
+    "qr-box";
+
+
+
+  const canvas=
+
+    document.createElement(
+      "canvas"
+    );
+
+
+  qrBox.appendChild(
+    canvas
+  );
+
+
+
+  const details=
+
+    document.createElement(
+      "div"
+    );
+
+
+
+  const urlBox=
+
+    document.createElement(
+      "div"
+    );
+
+
+  urlBox.className=
+    "url-box";
+
+
+  urlBox.textContent=
+    url;
+
+
+
+  const controls=
+
+    document.createElement(
+      "div"
+    );
+
+
+  controls.className=
+    "actions";
+
+
+
+  const copyBtn=
+
+    document.createElement(
+      "button"
+    );
+
+
+  copyBtn.className=
+    "secondary";
+
+
+  copyBtn.type=
+    "button";
+
+
+  copyBtn.textContent=
+    "Copy Link";
+
+
+  copyBtn.onclick=
+    async()=>{
+
+      try{
+
+        await navigator
+        .clipboard
+        .writeText(
+          url
+        );
+
+
+        copyBtn.textContent=
+          "Copied";
+
+
+        setTimeout(
+          ()=>
+          copyBtn.textContent=
+            "Copy Link",
+          1200
+        );
+
+      }catch{
+
+        prompt(
+          "Copy this URL:",
+          url
+        );
+      }
+
+    };
+
+
+
+  const downloadBtn=
+
+    document.createElement(
+      "button"
+    );
+
+
+  downloadBtn.className=
+    "secondary";
+
+
+  downloadBtn.type=
+    "button";
+
+
+  downloadBtn.textContent=
+    "Download QR PNG";
+
+
+  downloadBtn.onclick=
+    ()=>{
+
+      downloadPNG(
+        canvas,
+        payload.s
+      );
+
+    };
+
+
+
+  const openBtn=
+
+    document.createElement(
+      "a"
+    );
+
+
+  openBtn.className=
+    "btn secondary";
+
+
+  openBtn.textContent=
+    "Test End User View";
+
+
+  openBtn.href=
+    url;
+
+
+  openBtn.target=
+    "_blank";
+
+
+  openBtn.rel=
+    "noopener";
+
+
+
+  controls.append(
+    copyBtn,
+    downloadBtn,
+    openBtn
+  );
+
+
+
+  const note=
+
+    document.createElement(
+      "p"
+    );
+
+
+  note.className=
+    "muted";
+
+
+  note.textContent=
+
+    "Before printing labels, use 'Test End User View' to verify that the encoded configuration opens correctly.";
+
+
+
+  details.append(
+    urlBox,
+    controls,
+    note
+  );
+
+
+  layout.append(
+    qrBox,
+    details
+  );
+
+
+  item.append(
+    title,
+    layout
+  );
+
+
+  history.prepend(
+    item
+  );
+
+
+  return QR.draw(
+    canvas,
+    url
+  );
+}
+
+
+
+/* ============================================================
+   GENERATE
+============================================================ */
+
+
+form.addEventListener(
+  "submit",
+  event=>{
+
+    event.preventDefault();
+
+
+    setStatus(
+      ""
+    );
+
+
+    try{
+
+      const payload=
+        collect();
+
+
+      const encoded=
+        encode(
+          payload
+        );
+
+
+      const url=
+        targetURL(
+          encoded
+        );
+
+
+      const info=
+        addHistory(
+          payload,
+          url
+        );
+
+
+      setStatus(
+
+        "QR code generated for "+
+        payload.s+
+        ". QR Version "+
+        info.version+
+        ".",
+
+        "success"
+
+      );
+
+
+      /*
+        Form is deliberately NOT reset.
+
+        Batch history and installer
+        values remain visible.
+      */
+
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+
+      setStatus(
+
+        error.message||
+        "QR generation failed.",
+
+        "error"
+
+      );
+
+    }
+
+  }
+);
+
+
+
+/* ============================================================
+   CLEAR SESSION HISTORY
+============================================================ */
+
+
+clearHistory.onclick=
+()=>{
+
+  history.innerHTML=
+    "";
+
+
+  historyEmpty
+  .classList
+  .remove(
+    "hidden"
+  );
+
+
+  clearHistory
+  .classList
+  .add(
+    "hidden"
+  );
+
+
+  setStatus(
+    "Session history cleared."
+  );
+};
+
+
+
+/* ============================================================
+   VALIDATE END USER DATA
+============================================================ */
+
+
+function validate(
+  data
+){
+
+  if(
+    !data||
+    typeof data!=="object"||
+    Array.isArray(data)
+  )
+
+    throw Error(
+      "Invalid configuration."
+    );
+
+
+  if(
+    typeof data.s!=="string"||
+    !data.s.trim()
+  )
+
+    throw Error(
+      "Missing Specimen ID."
+    );
+
+
+  if(
+    data.c!==undefined
+  ){
+
+    if(
+      !Array.isArray(
+        data.c
+      )
+    )
+
+      throw Error(
+        "Invalid channel configuration."
+      );
+
+
+    for(
+      const row of data.c
+    ){
+
+      if(
+
+        !Array.isArray(row)||
+
+        row.length!==2||
+
+        !Number.isInteger(
+          row[0]
+        )||
+
+        row[0]<1||
+
+        row[0]>16||
+
+        typeof row[1]
+        !=="string"
+
+      )
+
+        throw Error(
+          "Invalid channel data."
+        );
+    }
+  }
+
+
+  return data;
+}
+
+
+
+/* ============================================================
+   END USER TABLE
+============================================================ */
+
+
+function renderUser(
+  data
+){
+
+  const metadata=[
+    [
+      "Specimen ID",
+      data.s
+    ],
+
+    [
+      "GTRS Number",
+      data.g||""
+    ],
+
+    [
+      "Installer Name",
+      data.i||""
+    ]
+  ]
+
+  .filter(
+    row=>
+    row[1]!==""
+  );
+
+
+
+  let html=
+
+  `<div class="table-wrap">
+
+    <table>
+
+      <tbody>
+
+      ${
+
+        metadata
+
+        .map(
+          row=>
+
+          `<tr>
+
+            <th>
+              ${esc(row[0])}
+            </th>
+
+            <td>
+              ${esc(row[1])}
+            </td>
+
+          </tr>`
+
+        )
+
+        .join("")
+
+      }
+
+      </tbody>
+
+    </table>
+
+  </div>`;
+
+
+
+  html+=
+
+  `<div class="channel-section">
+
+    <h2>
+      Channel Configuration
+    </h2>`;
+
+
+
+  const channels=
+    data.c||[];
+
+
+
+  if(
+    channels.length
+  ){
+
+    html+=
+
+    `<div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Channel
+            </th>
+
+            <th>
+              Gauge Factor
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+        ${
+
+          channels
+
+          .map(
+            row=>
+
+            `<tr>
+
+              <td>
+                Channel
+                ${esc(row[0])}
+              </td>
+
+              <td>
+                ${esc(row[1])}
+              </td>
+
+            </tr>`
+
+          )
+
+          .join("")
+
+        }
+
+        </tbody>
+
+      </table>
+
+    </div>`;
+
+  }else{
+
+    html+=
+
+    `<p class="empty">
+
+      No channel Gauge Factor
+      values were configured.
+
+    </p>`;
+
+  }
+
+
+
+  html+=
+    `</div>`;
+
+
+  userCard.innerHTML=
+    html;
+}
+
+
+
+/* ============================================================
+   START APPLICATION
+============================================================ */
+
 
 function init(){
- const params=new URLSearchParams(location.search);
- const encoded=params.get("d");
 
- if(encoded){
-   userView.classList.remove("hidden");
-   installerView.classList.add("hidden");
+  const params=
 
-   try{
-     const payload=validatePayload(decodePayload(encoded));
-     renderUserView(payload);
-     document.title=`${payload.s} - Specimen Configuration`;
-   }catch(err){
-     console.error(err);
-     renderPayloadError(
-       "The QR data is missing, corrupted, or is not a supported configuration payload."
-     );
-   }
- }else{
-   installerView.classList.remove("hidden");
-   userView.classList.add("hidden");
- }
+    new URLSearchParams(
+      location.search
+    );
+
+
+  const encoded=
+
+    params.get(
+      "d"
+    );
+
+
+
+  /*
+    ?d= exists:
+    End User View
+
+    No ?d=:
+    Installer View
+  */
+
+
+  if(encoded){
+
+    installerView
+    .classList
+    .add(
+      "hidden"
+    );
+
+
+    userView
+    .classList
+    .remove(
+      "hidden"
+    );
+
+
+    try{
+
+      const data=
+
+        validate(
+
+          decode(
+            encoded
+          )
+
+        );
+
+
+      renderUser(
+        data
+      );
+
+
+      document.title=
+
+        data.s+
+        " - Specimen Configuration";
+
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+
+      userCard.innerHTML=
+
+      `<div class="error-panel">
+
+        <strong>
+          Unable to open configuration.
+        </strong>
+
+        <br><br>
+
+        The QR configuration data is
+        missing, damaged or invalid.
+
+      </div>`;
+
+    }
+
+
+  }else{
+
+
+    userView
+    .classList
+    .add(
+      "hidden"
+    );
+
+
+    installerView
+    .classList
+    .remove(
+      "hidden"
+    );
+
+  }
+
 }
 
+
 init();
+
 })();
 </script>
+
 </body>
 </html>
 
-Sent from Outlook for iOS
-Vestas will as part of your communication, interaction and business relationship with us collect and process personal data about you.
-You can read more about Vestas’ collection and processing of your personal data and your rights as a data subject in our Privacy Policy.
 
-Classification: Restricted
