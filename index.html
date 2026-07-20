@@ -1,9 +1,3 @@
-The broken image icon means your computer browser is blocking the external web address (api.qrserver.com) from loading the image, or your local network is blocking outside data requests.
-To solve this permanently, we need a system with zero external network dependencies. [1] 
-Instead of asking an outside server to make the image, the code below generates the QR code locally on your computer screen using standard math calculations translated into pure HTML elements. It will work flawlessly anywhere—even if your computer or phone is completely disconnected from the internet. [1] 
-## The Fix: Pure Self-Contained Code
-Open your index.html file on GitHub, delete the previous content entirely, and paste this robust, fully self-contained version:
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,66 +92,3 @@ Open your index.html file on GitHub, delete the previous content entirely, and p
                     tbody.innerHTML += `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td></tr>`;
                 });
             } catch (e) {
-
-alert("Error reading QR code data.");
-}
-} else {
-document.getElementById('installer-view').classList.remove('hidden');
-}
-function resetForm() {
-const inputs = document.querySelectorAll('#input-table tbody tr input');
-inputs.forEach((input, index) => {
-if (index % 2 !== 0) input.value = '';
-});
-}
-function generateQR() {
-const rows = document.querySelectorAll('#input-table tbody tr');
-const data = [];
-const specimenId = document.getElementById('specimen-id').value || "Unknown Specimen";
-rows.forEach(row => {
-const inputs = row.querySelectorAll('input');
-const label = inputs[0].value;
-const value = inputs[1].value.trim();
-if (value !== '') { data.push([label, value]); }
-});
-if (data.length <= 3) { return alert("Please input at least one Gauge Factor before generating."); }
-const base64Data = encodeURIComponent(btoa(JSON.stringify(data)));
-const currentUrl = window.location.href.split('?')[0];
-const finalUrl = ${currentUrl}?d=${base64Data};
-document.getElementById('history-section').classList.remove('hidden');
-const gallery = document.getElementById('qr-gallery');
-const itemContainer = document.createElement('div');
-itemContainer.className = 'qr-item';
-// Draw QR code onto a local HTML5 canvas matrix
-const canvas = document.createElement('canvas');
-try {
-const matrix = qrcodegen.encodeText(finalUrl, 0); // Low error correction to handle longer URLs
-const scale = 5;
-canvas.width = matrix.length * scale;
-canvas.height = matrix.length * scale;
-const ctx = canvas.getContext('2d');
-matrix.forEach((row, rIdx) => {
-row.forEach((cell, cIdx) => {
-ctx.fillStyle = cell === 1 ? '#000000' : '#ffffff';
-ctx.fillRect(cIdx * scale, rIdx * scale, scale, scale);
-});
-});
-} catch (err) {
-return alert(err.message);
-}
-const labelText = document.createElement('p');
-labelText.innerText = specimenId;
-itemContainer.appendChild(canvas);
-itemContainer.appendChild(labelText);
-gallery.insertBefore(itemContainer, gallery.firstChild);
-}
-
-
-
-### Why this option can't break:
-Instead of trying to pull an external `<img>` asset across your firewall or local folders, this engine uses your browser's processing layer (`<canvas>`) to color small black and white square blocks pixel-by-pixel. 
-
-Commit this update to GitHub, open your test link in an **Incognito / Private tab**, type your parameters, and click generate. A crisp, raw QR canvas asset will render instantly on screen. Try scanning it with your smartphone camera right away.
-
-
-[1] [https://shortpen.com](https://shortpen.com/qr-code-api)
