@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR-to-Table Configuration</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--text:#17202a;--muted:#65717e;--line:#dce2e8;--primary:#1268d4;--primary2:#0d54ad;--danger:#b42318;--success:#067647;--radius:12px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.container{width:min(1100px,calc(100% - 28px));margin:28px auto 60px}
+h1,h2,h3{margin-top:0} h1{margin-bottom:5px;font-size:clamp(24px,4vw,34px)} h2{font-size:21px}
+.subtitle{margin:0;color:var(--muted)}
+.brand-header{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand-copy{min-width:0}
+.brand-logo{display:block;width:min(190px,32vw);height:auto;object-fit:contain}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 2px 8px rgba(16,24,40,.05);padding:22px;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:minmax(150px,240px) 1fr}
+.form-row{display:contents}
+.form-row label,.form-row .field{padding:10px 12px;border-bottom:1px solid var(--line)}
+.form-row label{font-weight:650;background:#f8fafb;display:flex;align-items:center}
+input{width:100%;min-height:42px;padding:9px 11px;border:1px solid #bbc5cf;border-radius:7px;font:inherit}
+input:focus{outline:3px solid rgba(18,104,212,.16);border-color:var(--primary)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+button,.button{border:0;border-radius:8px;min-height:43px;padding:10px 17px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary2)}.secondary{background:#e9eef4;color:#253342}
+.status{min-height:22px;margin:12px 0 0;font-weight:600}.status.error{color:var(--danger)}.status.success{color:var(--success)}
+.capacity{margin-top:12px;padding:11px 13px;border:1px solid var(--line);background:#f8fafb;border-radius:8px;color:#475467;font-size:13px}
+.history-empty{color:var(--muted);margin:0}.history-item{border:1px solid var(--line);border-radius:10px;padding:18px;margin-top:16px}
+.history-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.history-head h3{margin:0}
+.qr-layout{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:start}
+.qr-wrap{background:#fff;padding:12px;border:1px solid var(--line);border-radius:8px;line-height:0}
+canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated}
+.url-box{font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;padding:10px;background:#f5f7f9;border:1px solid var(--line);border-radius:7px;overflow-wrap:anywhere;margin-bottom:10px}
+.meta{color:var(--muted);font-size:13px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse}
+th,td{padding:11px 13px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f4f6f8}
+.config-section{margin-top:20px}.badge{display:inline-block;padding:3px 8px;background:#e9f2ff;color:#154c91;border-radius:999px;font-size:12px;font-weight:700}
+.hidden{display:none!important}.error-panel{border-left:4px solid var(--danger);padding:14px;background:#fff3f2;border-radius:6px;color:#7a271a}
+@media(max-width:700px){.brand-header{align-items:flex-start;gap:12px}.brand-logo{width:125px;max-width:34vw}.container{width:min(100% - 18px,1100px);margin-top:14px}.card{padding:14px}.form-grid{grid-template-columns:1fr}.form-row{display:block;border-bottom:1px solid var(--line);padding:10px 0}.form-row label,.form-row .field{display:block;border:0;padding:3px 0;background:none}.form-row label{margin-bottom:5px}.qr-layout{grid-template-columns:1fr}.qr-wrap{width:max-content;max-width:100%;margin:auto}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<main id="installerView" class="hidden">
+<header class="brand-header">
+<div class="brand-copy"><h1>QR-to-Table Configuration</h1><p class="subtitle">Installer View</p></div>
+<img class="brand-logo" src="vestas-logo.jpg" alt="Vestas">
+</header>
+
+<section class="card">
+<h2>Configuration Input</h2>
+<form id="configForm" autocomplete="off">
+<div class="form-grid" id="formGrid">
+<div class="form-row"><label for="specimenId">Specimen ID</label><div class="field"><input id="specimenId" maxlength="100" placeholder="e.g. #001" required></div></div>
+<div class="form-row"><label for="gtrsNumber">GTRS Number</label><div class="field"><input id="gtrsNumber" maxlength="100" placeholder="e.g. GTRS-2026-00001"></div></div>
+<div class="form-row"><label for="installerName">Installer Name</label><div class="field"><input id="installerName" maxlength="100" placeholder="e.g. John Hancock"></div></div>
+</div>
+<div class="actions"><button class="primary" type="submit">Generate QR Code</button></div>
+<div id="capacityInfo" class="capacity">QR Capacity: enter configuration data to calculate the required QR version.</div>
+<p id="formStatus" class="status"></p>
+</form>
+</section>
+
+<section class="card">
+<div class="history-head">
+<div><h2 style="margin-bottom:4px">Batch History Log</h2><div class="meta">Generated QR codes remain available while this page is open.</div></div>
+<button id="clearHistory" class="secondary hidden" type="button">Clear Session Log</button>
+</div>
+<p id="historyEmpty" class="history-empty">No QR codes generated in this session.</p>
+<div id="history"></div>
+</section>
+</main>
+
+<main id="userView" class="hidden">
+<header><h1>Specimen Configuration</h1><p class="subtitle">Read-Only Configuration</p></header>
+<section id="userCard" class="card"></section>
+</main>
+
+</div>
+
+<!-- Local proven QR library. Upload qrcode.js beside index.html. -->
+<script src="qrcode.js"></script>
+<script>
+(()=>{
+"use strict";
+
+const $=id=>document.getElementById(id);
+const installerView=$("installerView"),userView=$("userView"),form=$("configForm"),formGrid=$("formGrid");
+const status=$("formStatus"),capacityInfo=$("capacityInfo"),history=$("history"),historyEmpty=$("historyEmpty");
+const clearHistory=$("clearHistory"),userCard=$("userCard");
+
+for(let i=1;i<=16;i++){
+  const row=document.createElement("div");
+  row.className="form-row";
+  row.innerHTML=`<label for="channel${i}">Strain Gauge ${i}</label><div class="field"><input id="channel${i}" maxlength="80" placeholder="e.g. GF2.01"></div>`;
+  formGrid.appendChild(row);
+}
+
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+
+function collect(requireSpecimen=true){
+  const s=$("specimenId").value.trim();
+  if(requireSpecimen&&!s)throw Error("Specimen ID is required.");
+  const p={};
+  if(s)p.s=s;
+  const g=$("gtrsNumber").value.trim(),i=$("installerName").value.trim();
+  if(g)p.g=g;if(i)p.i=i;
+  const c=[];
+  for(let n=1;n<=16;n++){const v=$("channel"+n).value.trim();if(v)c.push([n,v])}
+  if(c.length)p.c=c;
+  return p;
+}
+
+function encode(p){
+  const bytes=new TextEncoder().encode(JSON.stringify(p));
+  let bin="";
+  for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
+function decode(s){
+  let b=s.replace(/-/g,"+").replace(/_/g,"/");
+  while(b.length%4)b+="=";
+  const bin=atob(b),bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function target(encoded){
+  const u=new URL(location.href);u.search="";u.hash="";u.searchParams.set("d",encoded);return u.href;
+}
+
+function makeQR(text){
+  if(typeof qrcode!=="function")throw Error("Local qrcode.js library was not loaded. Ensure qrcode.js is uploaded beside index.html.");
+  const qr=qrcode(0,"L");
+  qr.addData(text,"Byte");
+  qr.make();
+  return qr;
+}
+
+function drawQR(canvas,text){
+  const qr=makeQR(text),n=qr.getModuleCount(),quiet=4,scale=Math.max(4,Math.floor(420/(n+quiet*2))),size=(n+quiet*2)*scale;
+  canvas.width=size;canvas.height=size;
+  const ctx=canvas.getContext("2d",{alpha:false});
+  ctx.imageSmoothingEnabled=false;ctx.fillStyle="#fff";ctx.fillRect(0,0,size,size);ctx.fillStyle="#000";
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(qr.isDark(r,c))ctx.fillRect((c+quiet)*scale,(r+quiet)*scale,scale,scale);
+  return {version:(n-17)/4,modules:n};
+}
+
+function previewURL(){
+  const p=collect(false);
+  if(!Object.keys(p).length)return null;
+  return target(encode(p));
+}
+
+function updateCapacity(){
+  try{
+    const u=previewURL();
+    if(!u){capacityInfo.textContent="QR Capacity: enter configuration data to calculate the required QR version.";return}
+    const qr=makeQR(u),version=(qr.getModuleCount()-17)/4;
+    capacityInfo.textContent=`QR Capacity: Version ${version} of 40 required · Error Correction Level L`;
+  }catch(e){
+    capacityInfo.textContent="QR Capacity: "+String(e);
+  }
+}
+
+form.addEventListener("input",updateCapacity);
+
+function setStatus(m,t=""){status.textContent=m;status.className="status "+t}
+
+async function downloadPNG(canvas,s){
+  const safeName=(s||"specimen").replace(/[^a-z0-9_-]/gi,"_")+"_QR.png";
+  const dataUrl=canvas.toDataURL("image/png");
+
+  /* Convert canvas PNG to a File for native mobile sharing where supported. */
+  try{
+    const blob=await (await fetch(dataUrl)).blob();
+    const file=new File([blob],safeName,{type:"image/png"});
+
+    if(
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({files:[file]})
+    ){
+      await navigator.share({
+        files:[file],
+        title:safeName
+      });
+      return;
+    }
+  }catch(err){
+    /* Fall through to browser-specific save/open behavior. */
+    if(err && err.name==="AbortError")return;
+  }
+
+  /* Desktop browsers generally honor the download attribute. */
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if(!isMobile){
+    const a=document.createElement("a");
+    a.download=safeName;
+    a.href=dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
+
+  /* Mobile fallback: open the PNG directly so it can be long-pressed and saved. */
+  const w=window.open();
+  if(w){
+    w.document.write(
+      '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">'+
+      '<title>'+safeName+'</title></head>'+
+      '<body style="margin:0;background:#fff;display:grid;place-items:center;min-height:100vh">'+
+      '<img src="'+dataUrl+'" alt="QR Code" style="max-width:95vw;height:auto;image-rendering:pixelated">'+
+      '</body></html>'
+    );
+    w.document.close();
+  }else{
+    location.href=dataUrl;
+  }
+}
+
+function addHistory(p,u){
+  historyEmpty.classList.add("hidden");clearHistory.classList.remove("hidden");
+  const item=document.createElement("article");item.className="history-item";
+  const head=document.createElement("div");head.className="history-head";
+  const h=document.createElement("h3");h.textContent=p.s;
+  const badge=document.createElement("span");badge.className="badge";const count=p.c?.length||0;badge.textContent=`${count} active channel${count===1?"":"s"}`;
+  head.append(h,badge);
+
+  const layout=document.createElement("div");layout.className="qr-layout";
+  const qrw=document.createElement("div");qrw.className="qr-wrap";
+  const canvas=document.createElement("canvas");qrw.appendChild(canvas);
+
+  const detail=document.createElement("div");
+  const ub=document.createElement("div");ub.className="url-box";ub.textContent=u;
+  const controls=document.createElement("div");controls.className="actions";controls.style.marginTop="0";
+
+  const copy=document.createElement("button");copy.type="button";copy.className="secondary";copy.textContent="Copy Link";
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(u);copy.textContent="Copied";setTimeout(()=>copy.textContent="Copy Link",1200)}catch{prompt("Copy this URL:",u)}};
+
+  const dl=document.createElement("button");dl.type="button";dl.className="secondary";dl.textContent="Save / Share QR PNG";dl.onclick=()=>downloadPNG(canvas,p.s);
+
+  const open=document.createElement("a");open.className="button secondary";open.href=u;open.target="_blank";open.rel="noopener";open.textContent="Test End User View";
+  controls.append(copy,dl,open);
+
+  const meta=document.createElement("p");meta.className="meta";
+  detail.append(ub,controls,meta);layout.append(qrw,detail);item.append(head,layout);history.prepend(item);
+
+  const info=drawQR(canvas,u);
+  meta.textContent=`QR Version ${info.version} · ${info.modules} × ${info.modules} modules · Error Correction Level L`;
+  return info;
+}
+
+form.onsubmit=e=>{
+  e.preventDefault();setStatus("");
+  try{
+    const p=collect(true),u=target(encode(p)),info=addHistory(p,u);
+    setStatus(`QR code generated for ${p.s} — QR Version ${info.version}.`,"success");
+  }catch(err){console.error(err);setStatus(String(err.message||err),"error")}
+};
+
+clearHistory.onclick=()=>{history.replaceChildren();historyEmpty.classList.remove("hidden");clearHistory.classList.add("hidden");setStatus("Session history cleared.")};
+
+function validate(p){
+  if(!p||typeof p!=="object"||Array.isArray(p)||typeof p.s!=="string"||!p.s.trim())throw Error("Invalid configuration.");
+  if(p.c!==undefined){
+    if(!Array.isArray(p.c))throw Error("Invalid channels.");
+    for(const e of p.c)if(!Array.isArray(e)||e.length!==2||!Number.isInteger(e[0])||e[0]<1||e[0]>16||typeof e[1]!=="string")throw Error("Invalid channel.");
+  }
+  return p;
+}
+
+function render(p){
+  const meta=[["Specimen ID",p.s],["GTRS Number",p.g||""],["Installer Name",p.i||""]].filter(x=>x[1]!=="");
+  const channels=p.c||[];
+  userCard.innerHTML=`
+  <div class="table-wrap"><table><tbody>${meta.map(x=>`<tr><th>${esc(x[0])}</th><td>${esc(x[1])}</td></tr>`).join("")}</tbody></table></div>
+  <div class="config-section"><h2>Channel Configuration</h2>
+  ${channels.length?`<div class="table-wrap"><table><thead><tr><th>Strain Gauge</th><th>Gauge Factor</th></tr></thead><tbody>${channels.map(x=>`<tr><td>Strain Gauge ${esc(x[0])}</td><td>${esc(x[1])}</td></tr>`).join("")}</tbody></table></div>`:`<p class="history-empty">No Strain Gauge Gauge Factor values were configured.</p>`}
+  </div>`;
+}
+
+function init(){
+  const d=new URLSearchParams(location.search).get("d");
+  if(d){
+    userView.classList.remove("hidden");installerView.classList.add("hidden");
+    try{const p=validate(decode(d));render(p);document.title=p.s+" - Specimen Configuration"}
+    catch(e){userCard.innerHTML=`<div class="error-panel"><strong>Unable to open configuration.</strong><br>The QR data is missing, damaged or invalid.</div>`}
+  }else{
+    installerView.classList.remove("hidden");userView.classList.add("hidden");updateCapacity();
+  }
+}
+init();
+})();
+</script>
+</body>
+</html>
