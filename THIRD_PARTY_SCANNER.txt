@@ -1,0 +1,7 @@
+Mr MeeSeeks 8.0.8 scanner dependency
+
+Data Matrix decoding uses @zxing/library 0.23.0, loaded from UNPKG at runtime.
+Project: https://github.com/zxing-js/library
+License: Apache-2.0
+
+The app remains functional for manual Data Matrix entry if the decoder CDN is unavailable.
