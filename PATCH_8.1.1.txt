@@ -1,0 +1,9 @@
+Mr MeeSeeks 8.1.1
+
+UI cleanup patch:
+- Simplified help text beneath both Data Matrix inputs.
+- Removed technical scanner implementation wording from the user interface.
+- Added concise Scandit fallback instruction.
+- Removed redundant persistent green 'Captured Data Matrix' confirmation after a successful scan.
+- Existing dual-engine DPM scanner, two Data Matrix fields, DAQ 4 / SG49-SG64 and database behaviour are unchanged.
+- No new Supabase SQL migration is required for this patch.
