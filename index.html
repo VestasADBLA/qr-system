@@ -60,6 +60,7 @@ h1,h2,h3{margin-top:0} h1{margin-bottom:5px;font-size:clamp(24px,4vw,34px)} h2{f
 
 .daq-group.collapsed .form-row,.daq-group.collapsed .daq-tools{display:none!important}
 .daq-group{display:contents}
+.matrix-details{grid-column:1/-1;border:1px solid #dce2e8;border-radius:9px;padding:10px;margin:8px 0}.matrix-details>summary{font-weight:700;cursor:pointer;padding:7px}.matrix-details[open]>summary{margin-bottom:12px}
 
 
 input{width:100%;min-height:42px;padding:9px 11px;border:1px solid #bbc5cf;border-radius:7px;font:inherit}
@@ -215,7 +216,7 @@ th,td{padding:11px 13px;border:1px solid var(--line);text-align:left;vertical-al
 <div class="brand-copy">
 <h1>Specimen QR Generator</h1>
 <p class="subtitle">Installer View</p>
-<div class="build-info"><strong>Build:</strong> Mr MeeSeeks 8.1.9 &nbsp;|&nbsp; <strong>Creator:</strong> Adam Blake</div>
+<div class="build-info"><strong>Build:</strong> Mr MeeSeeks 8.1.12 &nbsp;|&nbsp; <strong>Creator:</strong> Adam Blake</div>
 </div>
 <img class="brand-logo" src="vestas-logo.jpg" alt="Vestas">
 </header>
@@ -224,7 +225,7 @@ th,td{padding:11px 13px;border:1px solid var(--line);text-align:left;vertical-al
 <h2>Editor Login</h2>
 <div id="signedOutPanel">
   <p class="meta">Sign in with an approved account to create or edit permanent database-backed specimen records. Scanning a specimen QR remains read-only and does not require a login.</p>
-  <div class="auth-row"><input id="authEmail" type="email" autocomplete="email" placeholder="name@vestas.com"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password"><button id="signInBtn" type="button" class="primary">Sign In</button><button id="signUpBtn" type="button" class="secondary">Create Account</button><button id="forgotPasswordBtn" type="button" class="secondary">Forgot Password?</button></div>
+  <div class="auth-row"><input id="authEmail" type="email" autocomplete="email" placeholder="name@vestas.com"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password"><button id="signInBtn" type="button" class="primary">Sign In</button><button id="signUpBtn" type="button" class="secondary">Create Account</button><button id="forgotPasswordBtn" type="button" class="secondary">Forgot Password?</button><button id="resendConfirmationBtn" type="button" class="secondary">Resend Confirmation Email</button></div>
 </div>
 <div id="signedInPanel" class="hidden"><div class="auth-row"><span class="db-badge">Database editor enabled</span><strong id="signedInEmail"></strong><button id="signOutBtn" type="button" class="secondary">Sign Out</button></div></div>
 <div id="passwordRecoveryPanel" class="hidden" style="margin-top:12px">
@@ -238,7 +239,7 @@ th,td{padding:11px 13px;border:1px solid var(--line);text-align:left;vertical-al
 <div id="authStatus" class="auth-state"></div>
 </section>
 
-<section class="card"><h2>Catman DAQ Setup Verification</h2><p class="meta">Guided checklist with reference screenshots, mandatory checks and specimen-linked audit history.</p><a class="button primary" href="catman-checklist.html">Open Catman DAQ Checklist</a></section>
+<section class="card"><h2>Catman DAQ Setup Verification</h2><p class="meta">Guided checklist with reference screenshots, mandatory checks and specimen-linked audit history.</p><a class="button primary" id="openCatmanChecklist" href="catman-checklist.html">Open Catman DAQ Checklist</a><p class="meta" id="catmanLinkStatus">Save or open a permanent specimen to link the checklist automatically.</p></section>
 <section class="card find-card hidden" id="findSpecimenCard">
 <h2>Find Existing Specimen / Reprint QR</h2>
 <p class="meta">Search existing permanent records by Specimen ID, GTRS Number or either Data Matrix ID. This does not create or modify a specimen.</p>
@@ -260,6 +261,7 @@ th,td{padding:11px 13px;border:1px solid var(--line);text-align:left;vertical-al
 <div class="form-row"><label for="specimenId">Specimen ID</label><div class="field"><input id="specimenId" maxlength="100" placeholder="e.g. #001" required></div></div>
 <div class="form-row"><label for="gtrsNumber">GTRS Number</label><div class="field"><input id="gtrsNumber" maxlength="100" placeholder="e.g. GTRS-2026-00001"></div></div>
 <div class="form-row"><label for="installerName">Installer Name</label><div class="field"><input id="installerName" maxlength="100" placeholder="e.g. John Hancock"></div></div>
+<details class="matrix-details"><summary>Specimen Data Matrix — Show / Hide</summary>
 <div class="notice matrix-root-note" style="margin:6px 0 10px">
   <strong>Data Matrix scanning is currently for Root Insert Specimens only.</strong>
 </div>
@@ -312,6 +314,7 @@ th,td{padding:11px 13px;border:1px solid var(--line);text-align:left;vertical-al
 </div>
 </div>
 
+</details>
 <div class="form-row matrix-follow-row"><label for="epicIssue">Epic Issue No.</label><div class="field"><input id="epicIssue" maxlength="16" placeholder="e.g. BMT-12345" autocomplete="off"></div></div>
 <div class="form-row"><label for="changeNote">Revision / Change Note</label><div class="field"><input id="changeNote" maxlength="100" placeholder="e.g. SG7 replaced mid-test - new GF2.08"></div></div>
 </div>
@@ -405,13 +408,25 @@ async function restoreSession(){
 async function signIn(){
   const email=$("authEmail").value.trim(),password=$("authPassword").value;
   if(!validVestasEmail(email))return setAuthStatus("Use your @vestas.com email address.","error");
-  try{setAuthStatus("Signing in…");const data=await sbFetch("/auth/v1/token?grant_type=password",{method:"POST",body:{email,password}});saveSession(data);setAuthStatus("Signed in. Database editing is enabled.","success")}catch(e){setAuthStatus(e.message,"error")}
+  try{setAuthStatus("Signing in…");const data=await sbFetch("/auth/v1/token?grant_type=password",{method:"POST",body:{email,password}});saveSession(data);setAuthStatus("Signed in. Database editing is enabled.","success")}catch(e){setAuthStatus(/email not confirmed/i.test(e.message)?"Email not confirmed. Check your inbox or use Resend Confirmation Email.":e.message,"error")}
 }
 async function signUp(){
   const email=$("authEmail").value.trim(),password=$("authPassword").value;
   if(!validVestasEmail(email))return setAuthStatus("Use your @vestas.com email address.","error");
   if(password.length<8)return setAuthStatus("Use a password of at least 8 characters.","error");
-  try{setAuthStatus("Creating account…");const data=await sbFetch("/auth/v1/signup",{method:"POST",body:{email,password}});if(data?.access_token){saveSession(data);setAuthStatus("Account created and signed in.","success")}else setAuthStatus("Account created. Check your Vestas email if confirmation is enabled, then sign in.","success")}catch(e){setAuthStatus(e.message,"error")}
+  try{setAuthStatus("Creating account…");const data=await sbFetch("/auth/v1/signup",{method:"POST",body:{email,password,options:{email_redirect_to:new URL(location.pathname,location.origin).href}}});if(data?.access_token){saveSession(data);setAuthStatus("Account created and signed in.","success")}else setAuthStatus("If registration is accepted, a confirmation email will be sent. Check inbox/junk; use Resend Confirmation Email if needed. Contact the administrator if nothing arrives.","success")}catch(e){setAuthStatus(e.message,"error")}
+}
+async function resendConfirmation(){
+  const email=$("authEmail").value.trim();
+  if(!validVestasEmail(email))return setAuthStatus("Enter your @vestas.com email address first.","error");
+  const button=$("resendConfirmationBtn");button.disabled=true;
+  try{
+    setAuthStatus("Requesting a new confirmation email…");
+    const redirect=new URL(location.pathname,location.origin).href;
+    await sbFetch("/auth/v1/resend",{method:"POST",body:{type:"signup",email,options:{email_redirect_to:redirect}}});
+    setAuthStatus("Confirmation requested. Check inbox and junk mail. Delivery depends on the Supabase email service and company mail filtering.","success");
+  }catch(e){setAuthStatus("Confirmation request failed: "+e.message,"error")}
+  finally{button.disabled=false}
 }
 async function requestPasswordReset(){
   const email=$("authEmail").value.trim();
@@ -512,8 +527,12 @@ function normalizeSpecimenSearchResults(data){
 function renderSpecimenSearchResults(rows){
   const root=$("findSpecimenResults");root.replaceChildren();
   if(!rows.length){setFindSpecimenStatus("No matching permanent specimens found.","error");return}
-  setFindSpecimenStatus(`${rows.length} matching specimen${rows.length===1?"":"s"} found.`,"success");
-  for(const row of rows){
+  const unique=[...new Map(rows.map(r=>[String(r.id||r.specimen_uuid||r.specimen_id_uuid||""),r])).values()];
+  const counts=new Map();
+  for(const r of unique){const key=(String(r.gtrs_number||"").trim()+"|"+String(r.specimen_label||r.specimen_id||r.label||"").trim()).toLowerCase();counts.set(key,(counts.get(key)||0)+1)}
+  const conflicts=[...counts.values()].filter(n=>n>1).length;
+  setFindSpecimenStatus(`${unique.length} record${unique.length===1?"":"s"} found.`+(conflicts?" WARNING: Multiple permanent UUIDs share the same GTRS/specimen number. Do not create or delete records until an administrator reviews them.":""),conflicts?"error":"success");
+  for(const row of unique){
     const uuid=String(row.id||row.specimen_uuid||row.specimen_id_uuid||"").trim();
     if(!uuid)continue;
     const specimen=String(row.specimen_label||row.specimen_id||row.label||"").trim();
@@ -522,7 +541,7 @@ function renderSpecimenSearchResults(rows){
     const dm2=String(row.data_matrix_id_2||"").trim();
     const statusText=String(row.status||"active").trim();
     const item=document.createElement("div");item.className="find-result";
-    item.innerHTML=`<div class="find-result-head"><div><div class="find-result-title">${esc(specimen||"Unnamed specimen")}</div><div class="find-result-meta">${gtrs?`GTRS: ${esc(gtrs)} · `:""}${dm1?`Side A: ${esc(dm1)} · `:""}${dm2?`Side B: ${esc(dm2)} · `:""}Status: ${esc(statusText)}</div></div></div>`;
+    item.innerHTML=`<div class="find-result-head"><div><div class="find-result-title">${esc(specimen||"Unnamed specimen")}</div><div class="find-result-meta">${gtrs?`GTRS: ${esc(gtrs)} · `:""}${dm1?`Side A: ${esc(dm1)} · `:""}${dm2?`Side B: ${esc(dm2)} · `:""}Status: ${esc(statusText)} · Rev ${Number(row.revision||0)} · UUID: ${esc(uuid.slice(0,8))}…</div></div></div>`;
     const actions=document.createElement("div");actions.className="actions";
     const open=document.createElement("a");open.className="button secondary";open.href=permanentTarget(uuid);open.target="_blank";open.rel="noopener";open.textContent="Open Record";
     const reprint=document.createElement("button");reprint.type="button";reprint.className="primary";reprint.textContent="Reprint QR";
@@ -553,6 +572,13 @@ function clearSpecimenSearch(){
   $("findSpecimenResults")?.replaceChildren();setFindSpecimenStatus("");
 }
 
+function updateCatmanLink(){
+  const link=document.getElementById("openCatmanChecklist"),hint=document.getElementById("catmanLinkStatus");
+  if(!link)return;
+  const uuid=databaseSpecimenUuid;
+  link.href=uuid?"catman-checklist.html?s="+encodeURIComponent(uuid):"catman-checklist.html";
+  if(hint)hint.textContent=uuid?"Linked to the currently open permanent specimen. The checklist will load its saved record automatically.":"No saved specimen selected. You can search within the checklist, or save/open a permanent specimen first.";
+}
 function permanentTarget(uuid){const u=new URL(location.href);u.search="";u.hash="";u.searchParams.set("s",uuid);return u.href}
 function rowToPayload(d){
   const s=d.specimen||{};
@@ -603,6 +629,14 @@ async function saveDatabaseSpecimen(p){
       counts and the transaction, so browser-side RLS cannot leave a partial
       specimen behind.
     */
+    // Guard against accidentally creating another permanent UUID for the same physical specimen.
+    // Server-side unique index in the companion migration is the concurrency-safe enforcement.
+    if(p.g&&p.s){
+      const existing=normalizeSpecimenSearchResults(await sbFetch("/rest/v1/rpc/find_existing_specimens",{method:"POST",auth:true,body:{p_query:p.g}}));
+      const norm=v=>String(v||"").trim().toLowerCase();
+      const matching=existing.filter(r=>norm(r.gtrs_number)===norm(p.g)&&norm(r.specimen_label||r.specimen_id||r.label)===norm(p.s));
+      if(matching.length)throw new Error("This GTRS and specimen number already has a permanent record. Open the existing record and use Edit to update its revision. Do not create another QR.");
+    }
     const initialGauges=[...desiredGauges.entries()].map(([num,gf])=>({
       gauge_number:num,
       gauge_factor:gf
@@ -629,7 +663,7 @@ async function saveDatabaseSpecimen(p){
       throw new Error("Specimen was saved but no database ID was returned.");
     }
 
-    databaseSpecimenUuid=uuid;
+    databaseSpecimenUuid=uuid;updateCatmanLink();
 
   }else{
     /*
@@ -1308,10 +1342,11 @@ function changeReplacementCount(gauge,delta){
   updateCapacity();
 }
 
-formGrid.appendChild(buildDaqGroup(1,1,16,false));
+formGrid.appendChild(buildDaqGroup(1,1,16,true));
 formGrid.appendChild(buildDaqGroup(2,17,32,true));
 formGrid.appendChild(buildDaqGroup(3,33,48,true));
 formGrid.appendChild(buildDaqGroup(4,49,64,true));
+updateCatmanLink();
 
 for(let i=1;i<=64;i++){
   const el=$("channel"+i);
@@ -1684,7 +1719,7 @@ form.onsubmit=async e=>{
     const uuid=await saveDatabaseSpecimen(p);
     const u=permanentTarget(uuid),info=addHistory(p,u);
     const quality=scanQuality(info.version);const total=(p.x||[]).reduce((sum,e)=>sum+e[1],0);
-    databaseSpecimenUuid=uuid;replacementEditMode=true;updateAuthUI();
+    databaseSpecimenUuid=uuid;updateCatmanLink();replacementEditMode=true;updateAuthUI();
     setStatus(`Saved to database for ${p.s} — Total replacements: ${total} · Permanent QR generated · 40 × 30 mm scan quality: ${quality.label}. Existing permanent QR remains valid after future updates.`,"success");
   }catch(err){console.error(err);setStatus(String(err.message||err),"error")}
 };
@@ -1888,6 +1923,7 @@ async function init(){
 
   $("signInBtn")?.addEventListener("click",signIn);
   $("signUpBtn")?.addEventListener("click",signUp);
+  $("resendConfirmationBtn")?.addEventListener("click",resendConfirmation);
   $("forgotPasswordBtn")?.addEventListener("click",requestPasswordReset);
   $("setNewPasswordBtn")?.addEventListener("click",setNewPassword);
   $("signOutBtn")?.addEventListener("click",signOut);
@@ -1897,12 +1933,12 @@ async function init(){
   const params=new URLSearchParams(location.search);const d=params.get("d"),sid=params.get("s"),edit=params.get("edit")==="1";
   if(sid){
     try{
-      const data=await loadDatabaseSpecimen(sid);const p=validate(rowToPayload(data));databaseSpecimenUuid=sid;databaseLoadedRecord=data;originalReplacementCounts=Object.fromEntries(p.x||[]);
+      const data=await loadDatabaseSpecimen(sid);const p=validate(rowToPayload(data));databaseSpecimenUuid=sid;updateCatmanLink();databaseLoadedRecord=data;originalReplacementCounts=Object.fromEntries(p.x||[]);
       if(edit){installerView.classList.remove("hidden");userView.classList.add("hidden");prefillForm(p);$("editNotice").textContent="Editing permanent database record — use + Replacement to log a failed/replaced gauge. Changes save to the database and the existing QR remains valid.";document.title="Edit - "+p.s+" - Specimen QR Generator";updateAuthUI()}
       else{userView.classList.remove("hidden");installerView.classList.add("hidden");render(p,data);const a=userCard.querySelector('a.button.secondary');if(a){a.href=location.pathname+"?edit=1&s="+encodeURIComponent(sid);a.textContent="Edit / Update Configuration"}document.title=p.s+" - Strain Gauge Configuration"}
     }catch(e){userView.classList.remove("hidden");installerView.classList.add("hidden");userCard.innerHTML=`<div class="error-panel"><strong>Unable to open database specimen.</strong><br>${esc(e.message||e)}</div>`}
   }else if(d&&edit){
-    installerView.classList.remove("hidden");try{const p=validate(decode(d));prefillForm(p);databaseSpecimenUuid=null;originalReplacementCounts={};pendingReplacementActors={};$("editNotice").textContent="Legacy QR loaded. Saving while signed in will migrate this specimen to a permanent database QR; print the new permanent QR once.";document.title="Migrate - "+p.s}catch(e){installerView.classList.add("hidden");userView.classList.remove("hidden");userCard.innerHTML=`<div class="error-panel"><strong>Unable to edit configuration.</strong><br>The QR data is missing, damaged or invalid.</div>`}
+    installerView.classList.remove("hidden");try{const p=validate(decode(d));prefillForm(p);databaseSpecimenUuid=null;updateCatmanLink();originalReplacementCounts={};pendingReplacementActors={};$("editNotice").textContent="Legacy QR loaded. Saving while signed in will migrate this specimen to a permanent database QR; print the new permanent QR once.";document.title="Migrate - "+p.s}catch(e){installerView.classList.add("hidden");userView.classList.remove("hidden");userCard.innerHTML=`<div class="error-panel"><strong>Unable to edit configuration.</strong><br>The QR data is missing, damaged or invalid.</div>`}
   }else if(d){
     userView.classList.remove("hidden");installerView.classList.add("hidden");try{const p=validate(decode(d));render(p);document.title=p.s+" - Strain Gauge Configuration"}catch(e){userCard.innerHTML=`<div class="error-panel"><strong>Unable to open configuration.</strong><br>The QR data is missing, damaged or invalid.</div>`}
   }else{
