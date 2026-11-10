@@ -1,3 +1,17 @@
+# Mr MeeSeeks 8.1.16 — Vestas | Test Config Hub
+
+Homepage: `index.html`. Modules: `qr-generator.html`, `gauge-dashboard.html`, `catman-checklist.html`.
+
+**Permanent QR compatibility:** Existing `index.html?s=<uuid>` and legacy `index.html?d=...` links redirect with their query/hash to `qr-generator.html`. No database identifiers or printed QR labels change.
+
+**CSV export fix:** The dashboard previously shadowed the browser `URL` constructor with a Supabase URL string. Export now uses `globalThis.URL.createObjectURL` and a DOM-attached temporary anchor.
+
+**Deployment:** Upload ALL files in this package to repository root, preserving `assets/catman/`. The included SQL is the 8.1.14 installer statistics migration; run it only if not already applied. Verify original specimen QR scans, legacy QR scans, Catman specimen links, login, and CSV export after publishing.
+
+**Note:** Supabase email confirmation redirect URLs may need to allow `qr-generator.html` as well as `index.html`. This release does not modify the database.
+
+---
+
 # Specimen QR Generator — Mr MeeSeeks
 
 **Current application build:** Mr MeeSeeks **8.1.13** (Mini Beam Rigs only)  
@@ -110,3 +124,16 @@ This remains a **pilot** pending full multi-user validation and any necessary Ve
 - Only active specimen records are included. Existing duplicate specimen records may inflate figures; the dashboard flags duplicate GTRS/specimen groups rather than merging them.
 - No specimen UUID, QR, gauge replacement, or Catman verification data is modified by this feature.
 - 8.1.13 deployment: add `gauge-dashboard.html`, replace `index.html` and `README.md`, then run the SQL migration. Existing `catman-checklist.html` and screenshots remain unchanged.
+
+
+## 8.1.14 – Installer statistics and monthly labels
+
+- Dashboard reports initial installations by `specimens.installer_name` and physical replacement work by `gauge_replacements.replaced_by`; `logged_by` remains an independent audit field.
+- Technician names are grouped by the stored text, so spelling variations appear separately. Missing names are labelled **Not recorded**.
+- Gauge replacement rate is replacement events per 100 initially configured gauges (not a failure probability).
+- Monthly consumption shows full month and year; counts are unchanged.
+- Apply `Supabase_Gauge_Dashboard_8.1.14.sql` before deploying the updated dashboard HTML. The SQL replaces only the read-only reporting function and does not modify specimen or replacement records.
+
+
+### 8.1.15
+The QR Generator configuration and session history are in a collapsible panel, closed by default on the home page. Opening a saved specimen for editing expands it automatically. No database changes from 8.1.14.
