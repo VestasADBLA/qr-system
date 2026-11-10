@@ -137,3 +137,5 @@ This remains a **pilot** pending full multi-user validation and any necessary Ve
 
 ### 8.1.15
 The QR Generator configuration and session history are in a collapsible panel, closed by default on the home page. Opening a saved specimen for editing expands it automatically. No database changes from 8.1.14.
+
+
