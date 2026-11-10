@@ -1,6 +1,6 @@
 # Specimen QR Generator — Mr MeeSeeks
 
-**Current application build:** Mr MeeSeeks **8.1.12** (Mini Beam Rigs only)  
+**Current application build:** Mr MeeSeeks **8.1.13** (Mini Beam Rigs only)  
 **Creator:** Adam Blake  
 **Repository:** https://github.com/VestasADBLA/qr-system  
 **Application:** https://vestasadbla.github.io/qr-system/
@@ -74,7 +74,7 @@ Before accepting a deployment, test: legacy and UUID QR scanning; read-only acce
 | **8.0.8** | Earlier documented pilot baseline: permanent specimen QRs, authenticated changes, optional Data Matrix ID and replacement tracking. |
 | **8.1.7** | Catman DAQ Setup Verification introduced with specimen-linked Supabase verification/audit workflow and screenshot-guided checks. |
 | **8.1.8** | Nine direct Catman screenshots replaced earlier references; checklist reordered and Static/Fatigue settings, critical warnings and `.xls` ingestion guidance clarified. |
-| **8.1.12** | Initial DAQ Configuration sample-rate checkbox now explicitly displays the rig-specific Static DAQ frequency (100 Hz for Rig 1; 50 Hz for Rigs 2–5), rather than a generic instruction or rig-dropdown label. No database change. |
+| **8.1.13** | Initial DAQ Configuration sample-rate checkbox now explicitly displays the rig-specific Static DAQ frequency (100 Hz for Rig 1; 50 Hz for Rigs 2–5), rather than a generic instruction or rig-dropdown label. No database change. |
 | **8.1.9** | Gauge-factor comparison references QR-system values; filename example corrected to `%DateTime%.xls`; Fatigue file-format note separated; MX1615B/MOOG checks clarified; Mini Beam rigs renamed 1–5; frequency guidance moved to Initial DAQ Configuration. Insert Rig options were proposed but **removed** from the current release. |
 
 Intermediate changes between 8.0.8 and 8.1.7 are not individually reconstructed here; consult repository commit history and the existing `CHANGELOG.md` for precise intermediate release details.
@@ -83,16 +83,16 @@ Intermediate changes between 8.0.8 and 8.1.7 are not individually reconstructed 
 
 This remains a **pilot** pending full multi-user validation and any necessary Vestas Information Security / SaaS approvals for Supabase. Potential future work includes Insert Rigs 1–10, but their checklist applicability should be confirmed before enabling them. Keep this README, the changelog and architecture/security/database documents aligned whenever application or SQL behaviour changes.
 
-## 8.1.12 — duplicate protection and email confirmation
+## 8.1.13 — duplicate protection and email confirmation
 
 - Catman search shows distinct UUIDs, revision labels, and an explicit warning when multiple permanent UUIDs share a GTRS/specimen number. It does not silently hide or merge these records.
 - Main specimen search identifies conflicting records and shows abbreviated UUIDs.
 - New-specimen creation checks for an existing matching GTRS/specimen pair and refuses to create another via the UI. Existing records should be opened and edited; changes retain the UUID.
-- `Supabase_8.1.12_Duplicate_Protection.sql` provides a read-only duplicate report and a conditional unique-index migration. **Do not run the index step while duplicate groups remain.** Existing records must be reviewed individually with their QR, gauge and verification dependencies.
+- `Supabase_8.1.13_Duplicate_Protection.sql` provides a read-only duplicate report and a conditional unique-index migration. **Do not run the index step while duplicate groups remain.** Existing records must be reviewed individually with their QR, gauge and verification dependencies.
 - Login UI includes a resend-confirmation action. Administrators must separately check Supabase Auth logs, confirmation settings, redirect URL and SMTP delivery. See `AUTH_EMAIL_TROUBLESHOOTING.md`.
 - The browser-side duplicate check is supplementary; database uniqueness is only guaranteed once the unique index has been successfully created.
 
-## 8.1.12 — UI and Catman workflow
+## 8.1.13 — UI and Catman workflow
 
 - Data Matrix and DAQ 1 gauge entry sections collapsed by default; existing input data preserved when toggled.
 - Opening the Catman checklist from a saved specimen passes its permanent UUID; direct checklist access still supports search.
@@ -100,3 +100,13 @@ This remains a **pilot** pending full multi-user validation and any necessary Ve
 - Static sampling: Mini Beam Rig 1 100 Hz, Mini Beam Rigs 2–5 50 Hz. Fatigue statistics recording uses a `.stat` file and does not use the static sample-rate requirement.
 - Slide headings aligned to DAQ Jobs navigation. Static Store and Save require TPR-listed sensors and five specified MOOG channels; Cycles and Laser Trip not required.
 - Retains 8.1.11 duplicate prevention and email-confirmation recovery. SQL uniqueness migration still requires review of existing duplicates before execution.
+
+## Gauge Usage & Reliability Dashboard (8.1.13)
+
+- `gauge-dashboard.html` provides authenticated, read-only reporting by GTRS project and individual specimen, with current-year/all-time filters, monthly trends, frequently replaced positions and CSV export.
+- Requires running `Supabase_Gauge_Dashboard_8.1.13.sql` once in Supabase SQL Editor. The RPC `get_gauge_usage_dashboard()` checks authenticated Vestas email claims and returns aggregate reporting data.
+- Initial counts are **current configured gauge positions** in `strain_gauges`, not independently verified physical installation events. The specimen creation timestamp is used as a **proxy** for installation date; a future installation event table would improve precision.
+- Replacement counts are based on append-only `gauge_replacements` events and their actual timestamps. Replacements / 100 initial gauges is a consumption indicator, not failure probability.
+- Only active specimen records are included. Existing duplicate specimen records may inflate figures; the dashboard flags duplicate GTRS/specimen groups rather than merging them.
+- No specimen UUID, QR, gauge replacement, or Catman verification data is modified by this feature.
+- 8.1.13 deployment: add `gauge-dashboard.html`, replace `index.html` and `README.md`, then run the SQL migration. Existing `catman-checklist.html` and screenshots remain unchanged.
