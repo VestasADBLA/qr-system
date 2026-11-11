@@ -1,3 +1,17 @@
+# Mr MeeSeeks 8.1.17 — Homepage authentication and technician identities
+
+**Release changes:** Central login on `index.html`; shared session across all modules; QR Generator links back to homepage for authentication; technician selector replaces free-text installer entry; gauge replacements use an approved technician-number selection; dashboard alias consolidation and confirmed Jim/Bob placeholder exclusion from *people* statistics. Historical records and permanent QR URLs are unchanged.
+
+**Employee directory:** Edit `employee-directory.js` to add only verified employee email/name pairs. The supplied `mtsmh`/Matt Smith alias is mapped for dashboard presentation but is **not** a selectable employee until the email is verified. Unrecognised names remain visible for review. The directory is a client-side usability control, not an authorisation boundary.
+
+**Important limitation:** Existing dashboard RPC returns aggregate counts per recorded person. Client-side consolidation sums these counts, including specimen counts, which can double-count specimens shared by aliases. This release does **not** rewrite Supabase data or migrate historical records. For authoritative unique-person statistics, implement the server-side identity migration after reviewing aliases and RLS.
+
+**Security:** Supabase authentication and existing server-side RLS/RPC policies remain the enforcement point. The client-side directory cannot prevent API submissions with arbitrary names; add a server-side approved-technician table and RPC validation before relying on names as verified evidence.
+
+**Deploy:** Upload all release files to repository root, retaining `assets/catman/`, `qrcode.js`, and `vestas-logo.jpg`. Verify login, account creation/confirmation/reset, sign out, editing, dashboard, Catman and existing printed QR scans. Configure Supabase allowed redirect URLs for the homepage.
+
+---
+
 # Mr MeeSeeks 8.1.16 — Vestas | Test Config Hub
 
 Homepage: `index.html`. Modules: `qr-generator.html`, `gauge-dashboard.html`, `catman-checklist.html`.

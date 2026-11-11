@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Specimen QR Generator</title>
+<script>if(new URLSearchParams(location.hash.slice(1)).get('type')==='recovery'){location.replace('index.html?password-reset=1'+location.hash)}</script>
 <style>
 :root{--bg:#f3f5f7;--card:#fff;--text:#17202a;--muted:#65717e;--line:#dce2e8;--primary:#1268d4;--primary2:#0d54ad;--danger:#b42318;--success:#067647;--radius:12px}
 *{box-sizing:border-box}
@@ -216,28 +217,12 @@ details.qr-generator-panel>summary{cursor:pointer;font-size:1.2rem;padding:4px 0
 <div class="brand-copy">
 <h1>QR Generator</h1><p><a href="index.html">⌂ Home — Vestas | Test Config Hub</a></p>
 <p class="subtitle">Installer View</p>
-<div class="build-info"><strong>Build:</strong> Mr MeeSeeks 8.1.16 &nbsp;|&nbsp; <strong>Creator:</strong> Adam Blake</div>
+<div class="build-info"><strong>Build:</strong> Mr MeeSeeks 8.1.17 &nbsp;|&nbsp; <strong>Creator:</strong> Adam Blake</div>
 </div>
 <img class="brand-logo" src="vestas-logo.jpg" alt="Vestas">
 </header>
 
-<section class="card auth-card" id="authCard">
-<h2>Editor Login</h2>
-<div id="signedOutPanel">
-  <p class="meta">Sign in with an approved account to create or edit permanent database-backed specimen records. Scanning a specimen QR remains read-only and does not require a login.</p>
-  <div class="auth-row"><input id="authEmail" type="email" autocomplete="email" placeholder="name@vestas.com"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password"><button id="signInBtn" type="button" class="primary">Sign In</button><button id="signUpBtn" type="button" class="secondary">Create Account</button><button id="forgotPasswordBtn" type="button" class="secondary">Forgot Password?</button><button id="resendConfirmationBtn" type="button" class="secondary">Resend Confirmation Email</button></div>
-</div>
-<div id="signedInPanel" class="hidden"><div class="auth-row"><span class="db-badge">Database editor enabled</span><strong id="signedInEmail"></strong><button id="signOutBtn" type="button" class="secondary">Sign Out</button></div></div>
-<div id="passwordRecoveryPanel" class="hidden" style="margin-top:12px">
-  <p class="meta">Enter a new password for your Vestas account.</p>
-  <div class="auth-row">
-    <input id="newPassword" type="password" autocomplete="new-password" placeholder="New password">
-    <input id="confirmNewPassword" type="password" autocomplete="new-password" placeholder="Confirm new password">
-    <button id="setNewPasswordBtn" type="button" class="primary">Set New Password</button>
-  </div>
-</div>
-<div id="authStatus" class="auth-state"></div>
-</section>
+<section class="card" id="authCard"><strong>Vestas account</strong><p class="meta">Sign in or sign out from the <a href="index.html#account">Test Config Hub homepage</a>. A signed-in session is shared across modules. Scanned QR records remain read-only without login.</p><div id="signedOutPanel"><a href="index.html#account">Go to homepage login</a></div><div id="signedInPanel" class="hidden"><span class="db-badge">Signed in</span> <strong id="signedInEmail"></strong> · <a href="index.html#account">Manage account</a></div><div id="passwordRecoveryPanel" class="hidden"><p>Use the homepage password recovery form.</p><a href="index.html#account">Open homepage</a></div><div id="authStatus" class="auth-state"></div></section>
 
 
 <div id="qrGeneratorPanel" class="qr-generator-panel">
@@ -261,7 +246,7 @@ details.qr-generator-panel>summary{cursor:pointer;font-size:1.2rem;padding:4px 0
 <div class="form-grid" id="formGrid">
 <div class="form-row"><label for="specimenId">Specimen ID</label><div class="field"><input id="specimenId" maxlength="100" placeholder="e.g. #001" required></div></div>
 <div class="form-row"><label for="gtrsNumber">GTRS Number</label><div class="field"><input id="gtrsNumber" maxlength="100" placeholder="e.g. GTRS-2026-00001"></div></div>
-<div class="form-row"><label for="installerName">Installer Name</label><div class="field"><input id="installerName" maxlength="100" placeholder="e.g. John Hancock"></div></div>
+<div class="form-row"><label for="installerName">Installer Name</label><div class="field"><select id="installerName" required><option value="">Sign in on homepage</option></select><p class="meta">Defaults to your verified Vestas account. Other technicians must be selected from the approved directory.</p></div></div>
 <details class="matrix-details"><summary>Specimen Data Matrix — Show / Hide</summary>
 <div class="notice matrix-root-note" style="margin:6px 0 10px">
   <strong>Data Matrix scanning is currently for Root Insert Specimens only.</strong>
@@ -348,6 +333,7 @@ details.qr-generator-panel>summary{cursor:pointer;font-size:1.2rem;padding:4px 0
 <script src="qrcode.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.23.0/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.2/dist/iife/reader/index.js"></script>
+<script src="employee-directory.js"></script>
 <script>
 (()=>{
 "use strict";
@@ -394,7 +380,19 @@ function validVestasEmail(v){
   return /^[^@\s]+@vestas\.com$/i.test(e)||e==="lukerayner@hotmail.com";
 }
 function setAuthStatus(m,t=""){const el=$("authStatus");if(!el)return;el.textContent=m;el.style.color=t==="error"?"var(--danger)":t==="success"?"var(--success)":"var(--muted)"}
+function updateTechnicianOptions(){
+ const el=$("installerName");if(!el)return;
+ const current=el.value, email=authSession?.user?.email||"";
+ const approved=(window.MRM_EMPLOYEES||[]).filter(x=>x.email&&x.name);
+ const choices=[];
+ if(email)choices.push({value:email.split("@")[0].toLowerCase(),label:email+" (signed-in user)"});
+ for(const e of approved)if(!choices.some(x=>x.value===e.email.split("@")[0].toLowerCase()))choices.push({value:e.email.split("@")[0].toLowerCase(),label:e.name+" ("+e.email+")"});
+ if(current&&!choices.some(x=>x.value===current))choices.push({value:current,label:current+" (historical record — review before changing)"});
+ el.replaceChildren(new Option('Select technician…',''),...choices.map(x=>new Option(x.label,x.value)));
+ el.value=current&&choices.some(x=>x.value===current)?current:(email?email.split("@")[0].toLowerCase():"");
+}
 function updateAuthUI(){
+ updateTechnicianOptions();
   const signed=!!authSession?.access_token;
   $("passwordRecoveryPanel")?.classList.toggle("hidden",!passwordRecoveryMode);
   $("signedOutPanel")?.classList.toggle("hidden",signed||passwordRecoveryMode);
@@ -1319,21 +1317,14 @@ function changeReplacementCount(gauge,delta){
   if(delta<=0)return;
 
   const label=String(gauge).padStart(3,"0");
-  const defaultName=(authSession?.user?.email||"").split("@")[0].replace(/[._-]+/g," ").replace(/\b\w/g,c=>c.toUpperCase());
-  const replacedBy=window.prompt(`Who physically replaced SG_${label}?`,defaultName);
-
-  if(replacedBy===null)return;
-
-  const technician=String(replacedBy||"").trim();
-  if(!technician){
-    setStatus("Replacement not recorded — Replaced By is required.","error");
-    return;
-  }
-  if(technician.length>100){
-    setStatus("Replaced By must be 100 characters or fewer.","error");
-    return;
-  }
-
+  if(!authSession?.user?.email){setStatus("Sign in on the homepage before recording a replacement.","error");return;}
+  const approved=[{name:authSession.user.email,email:authSession.user.email},...(window.MRM_EMPLOYEES||[])];
+  const unique=[...new Map(approved.filter(x=>x.email).map(x=>[x.email.toLowerCase(),x])).values()];
+  const selected=window.prompt(`Who physically replaced SG_${label}?\n`+unique.map((x,i)=>`${i+1}. ${x.name} (${x.email})`).join("\n")+"\nEnter the technician NUMBER (not a name):","1");
+  if(selected===null)return;
+  const number=Number(selected);
+  if(!Number.isInteger(number)||number<1||number>unique.length){setStatus("Choose a valid technician number from the approved directory.","error");return;}
+  const technician=unique[number-1].email.split("@")[0].toLowerCase();
   const current=getReplacementCount(gauge);
   replacementCounts[gauge]=current+1;
 
@@ -1861,6 +1852,7 @@ function prefillForm(p){
   for(const entry of (p.x||[]))replacementCounts[entry[0]]=entry[1];
   $("specimenId").value=p.s||"";
   $("gtrsNumber").value=p.g||"";
+  if(p.i&&!Array.from($("installerName").options).some(o=>o.value===p.i))$("installerName").add(new Option(p.i+" (historical — verify)",p.i));
   $("installerName").value=p.i||"";
   $("matrixId").value=p.m||"";
   matrixNotApplicable.checked=!p.m;
