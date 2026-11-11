@@ -153,3 +153,6 @@ This remains a **pilot** pending full multi-user validation and any necessary Ve
 The QR Generator configuration and session history are in a collapsible panel, closed by default on the home page. Opening a saved specimen for editing expands it automatically. No database changes from 8.1.14.
 
 
+
+### 8.1.17a identity mapping correction
+Dashboard historical aliases now consolidate Joshua Hall, Adam Blake, Luke Rayner and Matt Smith, including known Vestas email handles. Source mapping: `employee-directory.js`. This is display-level grouping, not a database rewrite.

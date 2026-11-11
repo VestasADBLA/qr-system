@@ -7,3 +7,6 @@
 - Jim and Bob are filtered only from the dashboard people table, not deleted from audit or specimen records.
 - Dashboard `specimens` aggregation is approximate across merged aliases; do not use it as a deduplicated unique specimen count.
 - Follow-up: implement authenticated staff directory, admin-approved alias mapping, server-side RPC identity enforcement and verified migration. Never auto-merge unverified people.
+
+## 8.1.17a alias correction
+Joshua Hall: jsuha, Joshua hal, Josh hall, Joshua hall. Adam Blake: adbla, adbla@vestas.com, Adam Blake. Luke Rayner: Luke, Luke Rayner. Matt Smith: mtsmh, Matt Smith. Case and whitespace are normalised; @vestas.com usernames are resolved through verified aliases. Jim and Bob remain excluded from the people table, with audit records retained. Other employee email addresses must be verified before adding them to the approved selector.
